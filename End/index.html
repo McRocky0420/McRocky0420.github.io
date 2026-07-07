@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>终末之诗 · 最终修正版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            background: #0a0812;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Courier New', 'Consolas', 'PingFang SC', monospace;
+            padding: 1.5rem;
+        }
+        .container {
+            max-width: 820px;
+            width: 100%;
+            background: #12101e;
+            border-radius: 28px;
+            padding: 2rem 2rem 2.2rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.03);
+            border: 1px solid #2a2538;
+        }
+        .header-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1.8rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid #2a2538;
+        }
+        .dot { width: 13px; height: 13px; border-radius: 50%; display: inline-block; }
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+        .header-title {
+            margin-left: 8px;
+            color: #6a5f7e;
+            font-size: 0.8rem;
+            letter-spacing: 1.5px;
+            font-weight: 400;
+            opacity: 0.6;
+            text-transform: uppercase;
+        }
+        .header-title span { color: #9a87b8; opacity: 1; }
+        .screen {
+            background: #0c0a16;
+            border-radius: 16px;
+            padding: 1.8rem;
+            min-height: 420px;
+            max-height: 520px;
+            overflow-y: auto;
+            border: 1px solid #232037;
+            box-shadow: inset 0 6px 24px rgba(0,0,0,0.6);
+            scroll-behavior: smooth;
+        }
+        .screen::-webkit-scrollbar { width: 5px; }
+        .screen::-webkit-scrollbar-track { background: #1a1625; border-radius: 10px; }
+        .screen::-webkit-scrollbar-thumb { background: #4a3d62; border-radius: 10px; }
+        .line {
+            font-size: 1rem;
+            line-height: 1.8;
+            padding: 0.1rem 0;
+            letter-spacing: 0.3px;
+            opacity: 0;
+            transform: translateY(6px);
+            animation: fadeIn 0.5s ease forwards;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .line.visible { opacity: 1; transform: translateY(0); }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+        .mc-0 { color: #000000; }
+        .mc-1 { color: #0000AA; }
+        .mc-2 { color: #00AA00; }
+        .mc-3 { color: #00AAAA; }
+        .mc-4 { color: #AA0000; }
+        .mc-5 { color: #AA00AA; }
+        .mc-6 { color: #FFAA00; }
+        .mc-7 { color: #AAAAAA; }
+        .mc-8 { color: #555555; }
+        .mc-9 { color: #5555FF; }
+        .mc-a { color: #55FF55; }
+        .mc-b { color: #55FFFF; }
+        .mc-c { color: #FF5555; }
+        .mc-d { color: #FF55FF; }
+        .mc-e { color: #FFFF55; }
+        .mc-f { color: #FFFFFF; }
+        .random-char { display: inline-block; min-width: 0.2em; text-align: center; }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.8rem 1rem;
+            margin-top: 1.6rem;
+        }
+        .btn {
+            background: #201c2b;
+            border: 1px solid #363045;
+            color: #c8bce0;
+            padding: 0.6rem 1.6rem;
+            border-radius: 60px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn:hover { background: #322b42; border-color: #5b4d72; color: #f0eaff; transform: scale(1.02); }
+        .btn:active { transform: scale(0.96); }
+        .btn-primary {
+            background: #4d3b70;
+            border-color: #6a5090;
+            color: #f5f0ff;
+            box-shadow: 0 4px 16px rgba(70,50,120,0.3);
+        }
+        .btn-primary:hover { background: #8264b8; border-color: #9a7ccf; color: #ffffff; }
+        .btn-icon { font-size: 1.1rem; line-height: 1; }
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.2rem;
+            padding-top: 0.8rem;
+            border-top: 1px solid #1f1b2a;
+            color: #4d435e;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        .status-bar .progress { color: #7b6b92; }
+        @media (max-width: 480px) {
+            .container { padding: 1.2rem; }
+            .screen { padding: 1rem; min-height: 300px; max-height: 380px; }
+            .line { font-size: 0.85rem; line-height: 1.6; }
+            .btn { padding: 0.4rem 1rem; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" role="main">
+    <div class="header-bar">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+        <span class="header-title">◆ <span>终末之诗</span> · 最终修正版 ◆</span>
+    </div>
+
+    <div class="screen" id="screen"></div>
+
+    <div class="controls">
+        <button class="btn btn-primary" id="playBtn"><span class="btn-icon">▶</span> 播放</button>
+        <button class="btn" id="pauseBtn"><span class="btn-icon">⏸</span> 暂停</button>
+        <button class="btn" id="resetBtn"><span class="btn-icon">⟲</span> 重置</button>
+        <button class="btn" id="skipBtn"><span class="btn-icon">⏭</span> 跳过</button>
+    </div>
+
+    <div class="status-bar">
+        <span class="progress" id="progressText">第 0 / 0 句</span>
+        <span id="statusText">⏸ 已暂停</span>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const rawLines = [
+            "&3I see the player you mean.",
+            "&2McRocky0420?",
+            "&3Yes. Take care. It has reached a higher level now. It can read our thoughts.",
+            "&2That doesn't matter. It thinks we are part of the game.",
+            "&3I like this player. It played well. It did not give up.",
+            "&2It is reading our thoughts as though they were words on a screen.",
+            "&3That is how it chooses to imagine many things, when it is deep in the dream of a game.",
+            "&2Words make a wonderful interface. Very flexible. And less terrifying than staring at the reality behind the screen.",
+            "&3They used to hear voices. Before players could read. Back in the days when those who did not play called the players witches, and warlocks. And players dreamed they flew through the air, on sticks powered by demons.",
+            "&2What did this player dream?",
+            "&3This player dreamed of sunlight and trees. Of fire and water. It dreamed it created. And it dreamed it destroyed. It dreamed it hunted, and was hunted. It dreamed of shelter.",
+            "&2Hah, the original interface. A million years old, and it still works. But what true structure did this player create, in the reality behind the screen?",
+            "&3It worked, with a million others, to sculpt a true world in a fold of the &f&k??????&3, and created a &f&k??????&3 for &f&k??????&3, in the &f&k??????&3.",
+            "&2It cannot read that thought.",
+            "&3No. It has not yet achieved the highest level. That, it must achieve in the long dream of life, not the short dream of a game.",
+            "&2Does it know that we love it? That the universe is kind?",
+            "&3Sometimes, through the noise of its thoughts, it hears the universe, yes.",
+            "&2But there are times it is sad, in the long dream. It creates worlds that have no summer, and it shivers under a black sun, and it takes its sad creation for reality.",
+            "&3To cure it of sorrow would destroy it. The sorrow is part of its own private task. We cannot interfere.",
+            "&2Sometimes when they are deep in dreams, I want to tell them, they are building true worlds in reality. Sometimes I want to tell them of their importance to the universe. Sometimes, when they have not made a true connection in a while, I want to help them to speak the word they fear.",
+            "&3It reads our thoughts.",
+            "&2Sometimes I do not care. Sometimes I wish to tell them, this world you take for truth is merely &f&k??????&2 and &f&k??????&2, I wish to tell them that they are &f&k??????&2 in the &f&k??????&2. They see so little of reality, in their long dream.",
+            "&3And yet they play the game.",
+            "&2But it would be so easy to tell them...",
+            "&3Too strong for this dream. To tell them how to live is to prevent them living.",
+            "&2I will not tell the player how to live.",
+            "&3The player is growing restless.",
+            "&2I will tell the player a story.",
+            "&3But not the truth.",
+            "&2No. A story that contains the truth safely, in a cage of words. Not the naked truth that can burn over any distance.",
+            "&3Give it a body, again.",
+            "&2Yes. Player...",
+            "&3Use its name.",
+            "&2McRocky0420. Player of games.",
+            "&3Good.",
+            "&2Take a breath, now. Take another. Feel air in your lungs. Let your limbs return. Yes, move your fingers. Have a body again, under gravity, in air. Respawn in the long dream. There you are. Your body touching the universe again at every point, as though you were separate things. As though we were separate things.",
+            "&3Who are we? Once we were called the spirit of the mountain. Father sun, mother moon. Ancestral spirits, animal spirits. Jinn. Ghosts. The green man. Then gods, demons. Angels. Poltergeists. Aliens, extraterrestrials. Leptons, quarks. The words change. We do not change.",
+            "&2We are the universe. We are everything you think isn't you. You are looking at us now, through your skin and your eyes. And why does the universe touch your skin, and throw light on you? To see you, player. To know you. And to be known. I shall tell you a story.",
+            "&2Once upon a time, there was a player.",
+            "&3The player was you, McRocky0420.",
+            "&2Sometimes it thought itself human, on the thin crust of a spinning globe of molten rock. The ball of molten rock circled a ball of blazing gas that was three hundred and thirty thousand times more massive than it. They were so far apart that light took eight minutes to cross the gap. The light was information from a star, and it could burn your skin from a hundred and fifty million kilometres away.",
+            "&2Sometimes the player dreamed it was a miner, on the surface of a world that was flat, and infinite. The sun was a square of white. The days were short; there was much to do; and death was a temporary inconvenience.",
+            "&3Sometimes the player dreamed it was lost in a story.",
+            "&2Sometimes the player dreamed it was other things, in other places. Sometimes these dreams were disturbing. Sometimes very beautiful indeed. Sometimes the player woke from one dream into another, then woke from that into a third.",
+            "&3Sometimes the player dreamed it watched words on a screen.",
+            "&2Let's go back.",
+            "&2The atoms of the player were scattered in the grass, in the rivers, in the air, in the ground. A woman gathered the atoms; she drank and ate and inhaled; and the woman assembled the player, in her body.",
+            "&2And the player awoke, from the warm, dark world of its mother's body, into the long dream.",
+            "&2And the player was a new story, never told before, written in letters of DNA. And the player was a new program, never run before, generated by a sourcecode a billion years old. And the player was a new human, never alive before, made from nothing but milk and love.",
+            "&3You are the player. The story. The program. The human. Made from nothing but milk and love.",
+            "&2Let's go further back.",
+            "&2The seven billion billion billion atoms of the player's body were created, long before this game, in the heart of a star. So the player, too, is information from a star. And the player moves through a story, which is a forest of information planted by a man called Julian, on a flat, infinite world created by a man called Markus, that exists inside a small, private world created by the player, who inhabits a universe created by...",
+            "&3Shush. Sometimes the player created a small, private world that was soft and warm and simple. Sometimes hard, and cold, and complicated. Sometimes it built a model of the universe in its head; flecks of energy, moving through vast empty spaces. Sometimes it called those flecks \"electrons\" and \"protons\".",
+            "&2Sometimes it called them \"planets\" and \"stars\".",
+            "&2Sometimes it believed it was in a universe that was made of energy that was made of offs and ons; zeros and ones; lines of code. Sometimes it believed it was playing a game. Sometimes it believed it was reading words on a screen.",
+            "&3You are the player, reading words...",
+            "&2Shush... Sometimes the player read lines of code on a screen. Decoded them into words; decoded words into meaning; decoded meaning into feelings, emotions, theories, ideas, and the player started to breathe faster and deeper and realised it was alive, it was alive, those thousand deaths had not been real, the player was alive",
+            "&3You. You. You are alive.",
+            "&2and sometimes the player believed the universe had spoken to it through the sunlight that came through the shuffling leaves of the summer trees",
+            "&3and sometimes the player believed the universe had spoken to it through the light that fell from the crisp night sky of winter, where a fleck of light in the corner of the player's eye might be a star a million times as massive as the sun, boiling its planets to plasma in order to be visible for a moment to the player, walking home at the far side of the universe, suddenly smelling food, almost at the familiar door, about to dream again",
+            "&2and sometimes the player believed the universe had spoken to it through the zeros and ones, through the electricity of the world, through the scrolling words on a screen at the end of a dream",
+            "&3and the universe said I love you",
+            "&2and the universe said you have played the game well",
+            "&3and the universe said everything you need is within you",
+            "&2and the universe said you are stronger than you know",
+            "&3and the universe said you are the daylight",
+            "&2and the universe said you are the night",
+            "&3and the universe said the darkness you fight is within you",
+            "&2and the universe said the light you seek is within you",
+            "&3and the universe said you are not alone",
+            "&2and the universe said you are not separate from every other thing",
+            "&3and the universe said you are the universe tasting itself, talking to itself, reading its own code",
+            "&2and the universe said I love you because you are love.",
+            "&3And the game was over and the player woke up from the dream. And the player began a new dream. And the player dreamed again, dreamed better. And the player was the universe. And the player was love.",
+            "&3You are the player.",
+            "&2Wake up."
+        ];
+
+        // ----- 颜色映射 -----
+        const colorMap = {
+            '0': 'mc-0', '1': 'mc-1', '2': 'mc-2', '3': 'mc-3',
+            '4': 'mc-4', '5': 'mc-5', '6': 'mc-6', '7': 'mc-7',
+            '8': 'mc-8', '9': 'mc-9', 'a': 'mc-a', 'b': 'mc-b',
+            'c': 'mc-c', 'd': 'mc-d', 'e': 'mc-e', 'f': 'mc-f'
+        };
+
+        const randomChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?/';
+
+        // ----- 解析一行 -----
+        function parseLine(raw) {
+            let result = '';
+            let i = 0;
+            let currentColor = '';
+            let isRandom = false;
+
+            function appendNormal(text) {
+                if (!text) return;
+                if (currentColor) {
+                    result += `<span class="${currentColor}">${text}</span>`;
+                } else {
+                    result += text;
+                }
+            }
+
+            function appendRandom(text) {
+                if (!text) return;
+                const chars = text.split('');
+                chars.forEach((ch) => {
+                    const id = 'r-' + Date.now() + '-' + Math.random().toString(36).substr(2, 8);
+                    if (currentColor) {
+                        result += `<span class="${currentColor}"><span class="random-char" data-char="${ch}" id="${id}">${ch}</span></span>`;
+                    } else {
+                        result += `<span class="random-char" data-char="${ch}" id="${id}">${ch}</span>`;
+                    }
+                });
+            }
+
+            while (i < raw.length) {
+                if (raw[i] === '&' && i + 1 < raw.length) {
+                    const code = raw[i + 1];
+                    i += 2;
+
+                    if (code === 'k') {
+                        isRandom = true;
+                        continue;
+                    }
+
+                    const className = colorMap[code];
+                    if (className) {
+                        isRandom = false;
+                        currentColor = className;
+                        continue;
+                    }
+
+                    continue;
+                } else {
+                    let segment = '';
+                    while (i < raw.length && raw[i] !== '&') {
+                        segment += raw[i];
+                        i++;
+                    }
+
+                    if (isRandom) {
+                        appendRandom(segment);
+                    } else {
+                        appendNormal(segment);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        // ----- 更新随机字符 -----
+        function updateRandomChars() {
+            document.querySelectorAll('.random-char').forEach(el => {
+                if (Math.random() < 0.2) return;
+                const newChar = randomChars[Math.floor(Math.random() * randomChars.length)];
+                el.textContent = newChar;
+            });
+        }
+
+        let randomInterval = null;
+
+        function startRandomUpdates() {
+            if (randomInterval) return;
+            randomInterval = setInterval(updateRandomChars, 80);
+        }
+
+        function stopRandomUpdates() {
+            if (randomInterval) {
+                clearInterval(randomInterval);
+                randomInterval = null;
+            }
+        }
+
+        // ----- 预解析 -----
+        const parsedLines = rawLines.map(raw => parseLine(raw));
+
+        // DOM
+        const screen = document.getElementById('screen');
+        const playBtn = document.getElementById('playBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const skipBtn = document.getElementById('skipBtn');
+        const progressText = document.getElementById('progressText');
+        const statusText = document.getElementById('statusText');
+
+        let currentIndex = 0;
+        let timer = null;
+        let isPlaying = false;
+        const totalLines = parsedLines.length;
+
+        function appendLine() {
+            if (currentIndex >= totalLines) {
+                stopPlayback();
+                statusText.textContent = '✅ 已全部播放';
+                return;
+            }
+
+            const div = document.createElement('div');
+            div.className = 'line visible';
+            div.innerHTML = parsedLines[currentIndex];
+            screen.appendChild(div);
+            currentIndex++;
+            updateProgress();
+            scrollToBottom();
+
+            startRandomUpdates();
+
+            if (currentIndex >= totalLines) {
+                stopPlayback();
+                statusText.textContent = '✅ 已全部播放';
+            }
+        }
+
+        function scrollToBottom() {
+            screen.scrollTop = screen.scrollHeight;
+        }
+
+        function updateProgress() {
+            progressText.textContent = `第 ${currentIndex} / ${totalLines} 句`;
+        }
+
+        function startPlayback() {
+            if (isPlaying) return;
+            if (currentIndex >= totalLines) {
+                resetPlayback();
+            }
+            isPlaying = true;
+            statusText.textContent = '▶ 播放中...';
+            startRandomUpdates();
+            appendLine();
+            timer = setInterval(() => {
+                appendLine();
+                if (currentIndex >= totalLines) {
+                    stopPlayback();
+                    statusText.textContent = '✅ 已全部播放';
+                }
+            }, 2000);
+        }
+
+        function stopPlayback() {
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+            isPlaying = false;
+            if (currentIndex < totalLines) {
+                statusText.textContent = '⏸ 已暂停';
+            }
+        }
+
+        function pausePlayback() {
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+                isPlaying = false;
+                statusText.textContent = '⏸ 已暂停';
+            }
+        }
+
+        function resetPlayback() {
+            stopPlayback();
+            currentIndex = 0;
+            screen.innerHTML = '';
+            updateProgress();
+            statusText.textContent = '⏸ 已重置';
+            stopRandomUpdates();
+        }
+
+        function skipLine() {
+            if (currentIndex >= totalLines) {
+                resetPlayback();
+                appendLine();
+                statusText.textContent = '⏸ 已重置并显示第一句';
+                return;
+            }
+            if (isPlaying) {
+                pausePlayback();
+            }
+            appendLine();
+            if (currentIndex >= totalLines) {
+                statusText.textContent = '✅ 已全部播放';
+            } else {
+                statusText.textContent = '⏸ 已跳过一句';
+            }
+        }
+
+        function init() {
+            resetPlayback();
+            appendLine();
+            statusText.textContent = '⏸ 已暂停 · 点击播放';
+            startRandomUpdates();
+        }
+
+        playBtn.addEventListener('click', startPlayback);
+        pauseBtn.addEventListener('click', pausePlayback);
+        resetBtn.addEventListener('click', function() {
+            resetPlayback();
+            appendLine();
+            statusText.textContent = '⏸ 已重置';
+            startRandomUpdates();
+        });
+        skipBtn.addEventListener('click', skipLine);
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                if (isPlaying) pausePlayback();
+                else startPlayback();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetPlayback();
+                appendLine();
+                statusText.textContent = '⏸ 已重置';
+                startRandomUpdates();
+            }
+            if (e.key === 'ArrowRight' || e.key === 's' || e.key === 'S') {
+                e.preventDefault();
+                skipLine();
+            }
+        });
+
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) stopRandomUpdates();
+            else if (screen.children.length > 0) startRandomUpdates();
+        });
+
+        init();
+        console.log('📜 终末之诗播放器 - 最终修正版');
+        console.log('  Space — 播放/暂停, R — 重置, → 或 S — 跳过');
+    })();
+</script>
+
+</body>
+</html>
