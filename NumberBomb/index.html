@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数字炸弹 - NumberBomb</title>
+    <style>
+        body {
+            background: #0d1117;
+            color: #c9d1d9;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #f0883e;
+            text-align: center;
+            border-bottom: 2px solid #30363d;
+            padding-bottom: 15px;
+        }
+        .desc {
+            text-align: center;
+            color: #8b949e;
+            margin-bottom: 20px;
+        }
+        .badge {
+            background: #21262d;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #8b949e;
+        }
+        pre {
+            background: #161b22;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #c9d1d9;
+            white-space: pre-wrap;
+            word-break: break-all;
+            border: 1px solid #30363d;
+        }
+        .back {
+            display: inline-block;
+            margin-top: 20px;
+            color: #f0883e;
+            text-decoration: none;
+        }
+        .back:hover {
+            text-decoration: underline;
+        }
+        .keyword { color: #ff7b72; }
+        .comment { color: #8b949e; }
+        .string { color: #a5d6ff; }
+        .func { color: #d2a8ff; }
+        .number { color: #79c0ff; }
+    </style>
+</head>
+<body>
+    <h1>💣 数字炸弹 (NumberBomb)</h1>
+    <p class="desc">简易版 · Copyright: McRocky <span class="badge">C++</span></p>
+
+    <pre>
+/*
+  简易版数字炸弹游戏
+  Copyright:McRocky
+*/
+#include&lt;bits/stdc++.h&gt;
+#include&lt;windows.h&gt;
+#include&lt;conio.h&gt;
+#include&lt;string&gt;
+using namespace std;
+void rl2()//规则2
+{
+    cout&lt;&lt;"2.你需要在这个范围内打出你想到的整数(最大值与最小值不算)"&lt;&lt;endl;
+}
+void st()//开始界面
+{
+    cout&lt;&lt;"**欢迎来到数字炸弹**"&lt;&lt;endl
+        &lt;&lt;"以下是本游戏的规则:"&lt;&lt;endl
+        &lt;&lt;"1.你需要输入一个范围"&lt;&lt;endl;
+    rl2();
+    cout&lt;&lt;"3.如果数字和系统给的随机数相同就算失败"&lt;&lt;endl
+        &lt;&lt;"4.建议多人游玩哦"&lt;&lt;endl
+        &lt;&lt;endl
+        &lt;&lt;"请按任意键开始游戏...";
+}
+void cl()//清屏
+{
+    system("cls");
+}
+void ps()//暂停
+{
+    system("pause>nul");
+}
+void sl(int number)//等待
+{
+    Sleep(number);
+}
+int main()//主程序
+{
+    srand(time(0));//撒随机种子
+    long long bomb=0,maximum=0,minimum=0,input=0;
+    string cmd="0",scmd="0";
+    bool newg=0;
+    st();
+    cout&lt;&lt;" (3)";
+    sl(1000);
+    cl();
+    st();
+    cout&lt;&lt;" (2)";
+    sl(1000);
+    cl();
+    st();
+    cout&lt;&lt;" (1)";
+    sl(1000);
+    cl();
+    st();
+    ps();
+    cl();
+    while(true)//开始无限循环
+    {
+        cout&lt;&lt;"请输入最小值:";
+        cin&gt;&gt;minimum;//输入最小值
+        while(maximum&lt;=minimum+1)
+        {
+            cout&lt;&lt;"请输入最大值:";
+            cin&gt;&gt;maximum;//输入最大值
+        }
+        while(bomb&lt;=minimum)
+        {
+            bomb=rand()%maximum;//设置炸弹
+        }
+        while(true)//一局游戏
+        {
+            if(newg==1)
+            {
+                break;
+            }
+            cout&lt;&lt;"请输入在"&lt;&lt;minimum&lt;&lt;"-"&lt;&lt;maximum&lt;&lt;"之内的数字:";
+            cin&gt;&gt;input;
+            if(input&gt;maximum||input&lt;minimum)//数字在范围之外
+            {
+                rl2();
+                cout&lt;&lt;"        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~                    "&lt;&lt;endl
+                    &lt;&lt;endl
+                    &lt;&lt;"请按任意键返回游戏...";
+                ps();
+                cl();
+                continue;
+            }
+            if(input==maximum||input==minimum)//输入了最小值或最大值
+            {
+                rl2();
+                cout&lt;&lt;"                                     ~~~~~~~~~~~~~~~~~~ "&lt;&lt;endl
+                    &lt;&lt;endl
+                    &lt;&lt;"请按任意键返回游戏...";
+                ps();
+                cl();
+                continue;
+            }
+            if(input&gt;bomb)//大于炸弹
+            {
+                maximum=input;
+            }
+            if(input&lt;bomb)//小于炸弹
+            {
+                minimum=input;
+            }
+            if(input==bomb)//等于炸弹
+            {
+                cout&lt;&lt;"你踩到了炸弹!"&lt;&lt;endl;
+                cl();
+                ps();
+                break;
+            }
+            cl();
+        }
+    }
+    return 0;
+}
+    </pre>
+
+    <a href="https://mcrocky0420.github.io/" class="back">← 返回导航页</a>
+</body>
+</html>
