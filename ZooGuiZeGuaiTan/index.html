@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>动物园规则怪谈 · 深渊回廊</title>
+  <style>
+    :root {
+      --bg: #0a0908; --panel: #151210; --text: #c8bfb2; --text-bright: #e6ddd2;
+      --accent: #9b3a3a; --accent-glow: #c04a4a; --gold: #b89a5a; --blue-glow: #2a4a6a;
+      --border: #2a221c; --btn-bg: #1b1612; --btn-hover: #241d17; --btn-border: #3a2e24;
+      --danger: #6a2020; --safe: #2a4a2a; --warning: #5a4520; --clue-bg: #100e0b;
+      --mythic: #c08a5c; --void: #1a1030;
+      --s-rank: #ffd966; --a-rank: #ff6b6b; --b-rank: #ffaa33; --c-rank: #9a8a7a; --d-rank: #5a5a5a; --e-rank: #3a2a3a;
+      font-size: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      background-image: radial-gradient(circle at 20% 30%, rgba(40,20,30,0.4) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 70%, rgba(20,30,50,0.5) 0%, transparent 60%);
+      font-family: 'Noto Serif SC', 'Georgia', 'SimSun', 'KaiTi', serif;
+      min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 16px; color: var(--text);
+    }
+    .particles { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index:0; }
+    .particle { position: absolute; background: rgba(180,130,80,0.3); border-radius: 50%; animation: float linear infinite; opacity: 0; }
+    @keyframes float { 0%{transform: translateY(105vh) scale(0); opacity:0;} 15%{opacity:0.7;} 85%{opacity:0.2;} 100%{transform: translateY(-15vh) scale(1.8); opacity:0;} }
+    .main-container {
+      position: relative; z-index:2; width:100%; max-width: 750px; background: var(--panel);
+      border: 1px solid var(--border); border-radius: 12px;
+      box-shadow: 0 0 80px rgba(60,20,20,0.3), 0 0 150px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.02);
+      overflow: hidden; transition: all 0.3s;
+    }
+    .header { background: linear-gradient(180deg, #1a100c 0%, #0f0a06 100%); border-bottom: 1px solid var(--border); padding: 18px 24px; text-align: center; }
+    .header h1 { font-size: 1.7em; letter-spacing: 0.2em; color: var(--text-bright); font-weight: 400; text-shadow: 0 0 30px rgba(180,100,40,0.5); }
+    .header .subtitle { font-size: 0.8em; color: #7a6a5a; letter-spacing: 0.25em; margin-top: 5px; }
+    .time-display { display: flex; justify-content: space-between; align-items: center; padding: 8px 20px; background: #0a0705; border-bottom: 1px solid #201a14; font-size: 0.8em; color: #8a7a60; }
+    .time-bar { width: 120px; height: 6px; background: #1a1510; border-radius: 3px; overflow: hidden; }
+    .time-fill { height: 100%; width: 100%; background: #b89040; transition: width 0.5s; }
+    .time-fill.urgent { background: #c04030; animation: pulse-bar 1s infinite; }
+    @keyframes pulse-bar { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+    .clue-tracker { background: var(--clue-bg); border-bottom: 1px solid #2a1f16; padding: 10px 20px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .clue-dot { width: 12px; height: 12px; border-radius: 50%; background: #1f1812; border: 1px solid #33261c; transition: all 0.4s; flex-shrink: 0; }
+    .clue-dot.active { background: #b44a30; border-color: #c85a3a; box-shadow: 0 0 10px rgba(180,60,30,0.6); }
+    .clue-dot.special { background: #c8a040; border-color: #e0b850; box-shadow: 0 0 16px rgba(200,150,40,0.8); }
+    .clue-dot.mythic { background: #c080c0; border-color: #d0a0e0; box-shadow: 0 0 18px rgba(160,80,200,0.9); animation: myth-pulse 1.8s infinite; }
+    @keyframes myth-pulse { 0%,100%{box-shadow: 0 0 12px rgba(160,80,200,0.6);} 50%{box-shadow: 0 0 24px rgba(180,100,220,1);} }
+    .clue-label { font-size: 0.7em; color: #5a4838; letter-spacing: 0.1em; white-space: nowrap; }
+    .content-area { padding: 24px 24px 18px; min-height: 300px; position: relative; }
+    .scene-text { font-size: 1em; line-height: 1.85; letter-spacing: 0.04em; color: #bcb0a0; margin-bottom: 22px; white-space: pre-wrap; }
+    .scene-text .highlight { color: #d4a870; font-style: italic; }
+    .scene-text .warning-text { color: #c05040; font-weight: 600; }
+    .scene-text .mythic-text { color: #b890c0; font-weight: 600; text-shadow: 0 0 8px rgba(150,80,180,0.5); }
+    .scene-text .italic { font-style: italic; color: #9a8a7a; }
+    .typing-cursor { display: inline-block; animation: blink 1s step-end infinite; color: #b44a3a; }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+    .choices-area { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+    .choice-btn { width: 100%; padding: 14px 18px; background: var(--btn-bg); border: 1px solid var(--btn-border); border-radius: 6px; color: #b8a590; font-family: inherit; font-size: 0.9em; letter-spacing: 0.05em; cursor: pointer; text-align: left; transition: all 0.25s; }
+    .choice-btn:hover { background: var(--btn-hover); border-color: #6a5040; color: #d8c8b8; box-shadow: 0 0 18px rgba(80,40,20,0.3); transform: translateX(4px); }
+    .choice-btn.danger-choice { border-color: #4a2020; background: #180e0e; }
+    .choice-btn.danger-choice:hover { border-color: #7a3030; box-shadow: 0 0 20px rgba(120,20,20,0.5); }
+    .choice-btn.safe-choice { border-color: #2a3a2a; background: #0e180e; }
+    .choice-btn.mythic-choice { border-color: #3a2a4a; background: #150e1a; }
+    .ending-display { text-align: center; padding: 20px 0; }
+    .ending-rank { font-size: 4.5em; font-weight: bold; letter-spacing: 0.1em; margin-bottom: 8px; text-shadow: 0 0 40px currentColor; }
+    .ending-rank.s-rank { color: #ffd966; } .ending-rank.a-rank { color: #ff6b6b; } .ending-rank.b-rank { color: #ffaa33; } .ending-rank.c-rank { color: #9a8a7a; } .ending-rank.d-rank { color: #6a6a6a; } .ending-rank.e-rank { color: #4a3a5a; }
+    .ending-title { font-size: 1.6em; letter-spacing: 0.1em; margin-bottom: 14px; color: #d4c4b0; }
+    .ending-desc { font-size: 0.9em; color: #9a8a7a; line-height: 1.8; margin-bottom: 18px; }
+    .restart-btn { display: inline-block; padding: 12px 30px; background: transparent; border: 1px solid #4a3530; color: #a09080; font-family: inherit; font-size: 0.9em; letter-spacing: 0.1em; cursor: pointer; transition: all 0.3s; margin-top: 8px; }
+    .restart-btn:hover { border-color: #8a6a5a; color: #d4c4b0; box-shadow: 0 0 20px rgba(100,50,30,0.4); background: #1a1410; }
+    .footer-bar { border-top: 1px solid #201a14; padding: 10px 20px; font-size: 0.7em; color: #4a3a2a; display: flex; justify-content: space-between; background: #0a0806; }
+    @media (max-width: 500px) { .header h1 { font-size: 1.3em; } .content-area { padding: 14px; } .choice-btn { font-size: 0.8em; } }
+  </style>
+</head>
+<body>
+<div class="particles" id="particles"></div>
+<div class="main-container" id="mainContainer">
+  <div class="header"><h1>动 物 园 规 则 怪 谈</h1><div class="subtitle">—— 深 渊 回 廊 ——</div></div>
+  <div class="time-display"><span id="timeLabel">⏳ 入园时间</span><div class="time-bar"><div class="time-fill" id="timeFill"></div></div><span id="timeValue">15:00</span></div>
+  <div class="clue-tracker" id="clueTracker">
+    <span class="clue-label">📜 认知：</span>
+    <span class="clue-dot" id="dot1"></span><span class="clue-dot" id="dot2"></span><span class="clue-dot" id="dot3"></span><span class="clue-dot" id="dot4"></span>
+    <span class="clue-dot" id="dot5"></span><span class="clue-dot" id="dot6"></span><span class="clue-dot" id="dot7"></span><span class="clue-dot" id="dot8"></span>
+  </div>
+  <div class="content-area" id="contentArea"><div class="scene-text" id="sceneText"></div><div class="choices-area" id="choicesArea"></div></div>
+  <div class="footer-bar"><span id="footerLeft">📍 入口</span><span id="footerRight">🌫 未知</span></div>
+</div>
+<script>
+(function() {
+  // 粒子背景
+  for(let i=0;i<40;i++){let p=document.createElement('div');p.className='particle';let s=Math.random()*3+1.5;p.style.width=s+'px';p.style.height=s+'px';p.style.left=Math.random()*100+'%';p.style.animationDuration=(Math.random()*18+10)+'s';p.style.animationDelay=(Math.random()*10)+'s';document.getElementById('particles').appendChild(p);}
+
+  const state = {
+    clues: { c1:false,c2:false,c3:false,c4:false,c5:false,c6:false,c7:false,c8:false },
+    flags: { readRules:false, followedRabbit:false, enteredOcean:false, ignoredWorker:false, staredRabbit:false, ran:false, sawIt:false, heardWhisper:false, tookMap:false, touchedMirror:false, freedLion:false, metGuardian:false, acceptedVoid:false, brokeCycle:false, fledFromFourth:false, nightfallTriggered:false, stayedWithLions:false },
+    time: 900, choices: [], visits: 0
+  };
+
+  const dom = {
+    sceneText: document.getElementById('sceneText'), choices: document.getElementById('choicesArea'),
+    timeFill: document.getElementById('timeFill'), timeValue: document.getElementById('timeValue'),
+    footerLeft: document.getElementById('footerLeft'), footerRight: document.getElementById('footerRight'),
+    content: document.getElementById('contentArea')
+  };
+
+  function updateTime(minutes) {
+    state.time = Math.max(0, minutes);
+    let h = Math.floor(state.time/60), m = state.time%60;
+    dom.timeValue.textContent = `${h}:${m.toString().padStart(2,'0')}`;
+    let percent = Math.max(0, (state.time/1080)*100);
+    dom.timeFill.style.width = percent+'%';
+    if(state.time < 120) dom.timeFill.classList.add('urgent');
+    else dom.timeFill.classList.remove('urgent');
+    if(state.time <= 0) forceNightfall();
+  }
+
+  function forceNightfall() {
+    if(!state.flags.nightfallTriggered) {
+      state.flags.nightfallTriggered = true;
+      if(!currentSceneId.startsWith('night_') && !currentSceneId.startsWith('ending_')) loadScene('nightfall_force');
+    }
+  }
+
+  function updateClues() {
+    ['c1','c2','c3','c4','c5','c6','c7','c8'].forEach((id,i)=>{
+      let dot = document.getElementById('dot'+(i+1));
+      if(state.clues[id]) { dot.classList.add('active'); if(id==='c5'||id==='c6') dot.classList.add('special'); if(id==='c7'||id==='c8') dot.classList.add('mythic'); }
+      else dot.classList.remove('active','special','mythic');
+    });
+  }
+
+  const scenes = {};
+  function S(id, text, choices, footer, timeCost=0) { scenes[id] = { id, text, choices: choices||[], footer: footer||{left:'📍 园区',right:'🌫 未知'}, timeCost }; }
+
+  // ========== 场景定义 ==========
+  S('start', `你站在动物园锈迹斑斑的大门前。天色阴沉，空气中弥漫着潮湿的泥土味与一丝若有若无的<span class="highlight">甜腻气息</span>。
+宣传栏上贴着一张泛黄的<span class="highlight">《入园须知》</span>，旁边还有一块崭新的铜牌，上面刻着"本园为市级文明单位"。
+一个身穿黑色制服的工作人员站在门内，面无表情地看着你。`, [
+    { text: '📜 仔细阅读《入园须知》', target: 'read_rules', effect: 'c1', time: 5 },
+    { text: '🚶 忽略一切，直接入园', target: 'enter_direct', time: 3 },
+    { text: '🗣 与黑衣员工搭话', target: 'talk_worker_start', time: 4 },
+    { text: '🔍 检查铜牌与周围环境', target: 'inspect_plaque', time: 6 }
+  ], {left:'📍 入口',right:'⏳ 15:00'}, 0);
+
+  S('read_rules', `<span class="highlight">《入园须知》</span>：
+1. 请勿在园区内奔跑。
+2. 若看到<span class="warning-text">白兔</span>，勿对视超过三秒。
+3. 地图<span class="warning-text">虚线区域</span>不属于本园，禁止前往。
+4. 海洋馆<span class="warning-text">永久关闭</span>，无视任何指示牌。
+5. <span class="warning-text">黑衣员工</span>不会主动交谈。若他们开口……请假装没听见。
+6. 请在<span class="warning-text">日落前</span>离开。
+角落有一行小字：<span class="italic">"规则是墙。墙外是虚无。"</span>`, [
+    { text: '📌 记住规则，谨慎入园', target: 'enter_careful', effect: 'c1', time: 4 },
+    { text: '🤨 觉得荒诞，随手拍照后入园', target: 'enter_direct', time: 3 },
+    { text: '📸 拍下规则照片，仔细研究', target: 'photo_rules', time: 8 }
+  ], {left:'📍 宣传栏',right:'⏳ 15:05'}, 5);
+
+  S('photo_rules', `你拍下规则照片放大查看。在"海洋馆永久关闭"下方，隐约有一行被涂改液覆盖的字迹。
+透过像素仔细辨认，你读到：<span class="mythic-text">"但镜子记得。狮子是锁，兔子是眼。深渊有七层，此为第三。"</span>
+你后背一凉。这是什么意思？`, [
+    { text: '🔮 带着疑问谨慎入园', target: 'enter_careful', effect: 'c7', time: 4 },
+    { text: '📞 试图拨打照片上的某个模糊号码', target: 'call_number', time: 6 }
+  ], {left:'📍 宣传栏',right:'⏳ 15:08'}, 6);
+
+  S('call_number', `你尝试拨打照片上模糊的数字。电话接通了。
+对面传来一阵<span class="highlight">沉重的呼吸声</span>，然后一个沙哑的声音说："你不该打这个电话。但既然打了……记住，<span class="warning-text">黑衣员工曾经都是游客</span>。找到那个眼睛还在的。"电话挂断。`, [
+    { text: '😨 带着恐惧入园', target: 'enter_careful', effect: 'c4', time: 4 }
+  ], {left:'📍 入口',right:'⏳ 15:14'}, 6);
+
+  S('inspect_plaque', `铜牌上除了"文明单位"，边缘刻着极小的符号——一个圆被虚线穿过，下方写着"Ⅲ"。
+旁边地面有拖拽痕迹，指向灌木丛深处。你拨开灌木，发现一本<span class="highlight">被撕掉一半的日记</span>。
+可读部分写着："...第7天，狮子开口说话了。它说'还差一个'。我不知道是什么意思..."`, [
+    { text: '📖 带上日记残页入园', target: 'enter_careful', effect: 'c8', time: 6 },
+    { text: '🚷 感到不安，暂时离开', target: 'ending_early_leave_c', time: 1 }
+  ], {left:'📍 入口灌木',right:'⏳ 15:06'}, 6);
+
+  S('talk_worker_start', `你向黑衣员工打招呼。他的嘴唇紧闭，但喉咙里发出低沉的嗡鸣。
+突然，他的左眼<span class="highlight">流下一行黑色的液体</span>。他用极小的幅度摇了摇头，然后指向园区深处——指向的是<span class="warning-text">狮子区的方向</span>。`, [
+    { text: '🦁 听从暗示，前往狮子区', target: 'lion_zone_early', effect: 'c4', time: 8 },
+    { text: '😰 被吓到，直接入园乱逛', target: 'enter_direct', time: 4 }
+  ], {left:'📍 入口',right:'⏳ 15:04'}, 4);
+
+  S('enter_direct', `你径直走进园区。小径两旁灌木过于整齐。前方分岔路：<span class="highlight">兔子园</span>（左）、<span class="highlight">狮子区</span>（中）、<span class="highlight">游客中心</span>（右）。
+地面有奇怪的爪印，不似任何已知动物。`, [
+    { text: '🐇 兔子园', target: 'rabbit_zone', time: 6 },
+    { text: '🦁 狮子区', target: 'lion_zone', time: 6 },
+    { text: '🏛 游客中心', target: 'visitor_center', time: 5 }
+  ], {left:'📍 分岔口',right:'⏳ 15:07'}, 3);
+
+  S('enter_careful', `你将规则牢记于心，谨慎前行。来到分岔口，地上有一张被踩过的<span class="highlight">园区地图</span>。
+地图右下角虚线区域被划掉，旁边小字"海洋馆"。背面铅笔字：<span class="warning-text">"别信虚线。若已见虚线，去找狮子。"</span>`, [
+    { text: '🗺 捡起地图研究', target: 'study_map', effect: 'c2', time: 5 },
+    { text: '🐇 前往兔子园', target: 'rabbit_zone', time: 6 },
+    { text: '🦁 前往狮子区', target: 'lion_zone_with_clue', time: 6 }
+  ], {left:'📍 分岔口',right:'⏳ 15:10'}, 4);
+
+  S('study_map', `地图虚线被刻意涂抹。透过光看，虚线构成一个七边形，每个角标注罗马数字。
+你所在位置是"Ⅲ"。背面还有字：<span class="mythic-text">"七层深渊，此为第三。守门人失明了，需要新的眼睛。"</span>`, [
+    { text: '🦁 带地图去狮子区', target: 'lion_zone_with_clue', effect: 'c7', time: 6 },
+    { text: '🔎 尝试寻找虚线入口', target: 'seek_dashed', time: 8 }
+  ], {left:'📍 分岔口',right:'⏳ 15:15'}, 5);
+
+  S('seek_dashed', `你按虚线标记找到一堵墙。墙上粉笔字：<span class="warning-text">"虚线之内是真相。但真相不适合所有人。"</span>
+墙的轮廓隐约形成门的形状。`, [
+    { text: '🚪 等待门出现', target: 'wait_door', time: 15 },
+    { text: '🔙 返回主路', target: 'enter_careful', time: 5 }
+  ], {left:'📍 虚线边界',right:'⏳ 15:20'}, 8);
+
+  S('wait_door', `日落时分，墙上门显现。门内是海洋馆幽蓝的光。水箱深处，一个<span class="warning-text">巨大的阴影</span>正缓缓转身。
+门框上刻着："<span class="mythic-text">第三层·感知之渊</span>"。`, [
+    { text: '🌊 踏入海洋馆', target: 'enter_ocean_hall', effect: 'enteredOcean', time: 8 },
+    { text: '🏃 关门逃跑', target: 'flee_ocean', time: 4 }
+  ], {left:'📍 虚线之门',right:'⏳ 日落'}, 15);
+
+  S('rabbit_zone', `兔子园内十几只灰兔安静蹲着。角落一只<span class="warning-text">纯白兔子</span>，红眼如流动液体。
+它缓缓转头，看向后方隐蔽小径。标牌："员工通道·游客止步"，下方涂改箭头指向"海洋馆"。`, [
+    { text: '🐇 跟随白兔指引走小径', target: 'follow_rabbit', effect: 'followedRabbit', time: 7 },
+    { text: '👀 盯着白兔眼睛', target: 'stare_rabbit', time: 2 },
+    { text: '🚶 移开视线离开', target: 'leave_rabbit', effect: 'c3', time: 4 },
+    { text: '📸 给白兔拍照', target: 'photo_rabbit', time: 3 }
+  ], {left:'📍 兔子园',right:'⏳ 15:25'}, 6);
+
+  S('photo_rabbit', `你拍下白兔。照片里，白兔的位置<span class="highlight">没有任何兔子</span>——只有一个模糊的、人形的白色轮廓。
+你抬头，白兔还在原地。但照片里……那个人形轮廓正在<span class="warning-text">转向镜头</span>。`, [
+    { text: '😱 删除照片逃离', target: 'flee_rabbit_zone', effect: 'sawIt', time: 3 },
+    { text: '🔍 继续观察白兔', target: 'stare_rabbit', time: 2 }
+  ], {left:'📍 兔子园',right:'⏳ 15:28'}, 3);
+
+  S('stare_rabbit', `对视三秒。白兔嘴巴张开，露出<span class="highlight">人类般的牙齿</span>。天空变暗红。
+脑内声音：<span class="warning-text">"你看到了。现在它也能看到你了。"</span>眩晕袭来，白兔消失。太阳穴剧痛。`, [
+    { text: '🏃 惊慌逃离', target: 'flee_rabbit_zone', effect: 'sawIt', time: 3 },
+    { text: '🚶 强作镇定走向小径', target: 'follow_rabbit', effect: 'followedRabbit', time: 7 }
+  ], {left:'📍 兔子园',right:'⏳ 15:30'}, 2);
+
+  S('follow_rabbit', `小径尽头是一栋灰色建筑：<span class="warning-text">海洋馆</span>。门口黑衣员工脸上没有眼睛。
+他身旁石碑刻着："<span class="mythic-text">第三看守所·失明者守门</span>"。`, [
+    { text: '🌊 进入海洋馆', target: 'enter_ocean_hall', effect: 'enteredOcean', time: 6 },
+    { text: '🗣 询问黑衣员工', target: 'ask_worker_ocean', time: 4 },
+    { text: '🏃 转身逃跑', target: 'flee_ocean', time: 3 }
+  ], {left:'📍 海洋馆前',right:'⏳ 15:37'}, 7);
+
+  S('ask_worker_ocean', `"这里是哪里？"你问。黑衣员工嘴唇颤抖：<span class="warning-text">"裂缝。我们是塞子。兔子是警报。狮子是锁。海洋馆是门。你不该在这。快走。"</span>
+他嘴角流下黑液，身体渐透明。`, [
+    { text: '🏃 听从警告逃离', target: 'flee_ocean', effect: 'c4', time: 3 },
+    { text: '❓ 追问"它"是什么', target: 'ask_about_it', effect: 'heardWhisper', time: 2 }
+  ], {left:'📍 海洋馆前',right:'⏳ 15:41'}, 4);
+
+  S('ask_about_it', `"它是什么？"你追问。黑衣员工脸上皮肤<span class="warning-text">裂开</span>，幽蓝光透出。
+"它是……深渊第七层的……<span class="highlight">王</span>。你不该问的。"他完全消失。空气凝固，远处传来非动物的嗥叫。`, [
+    { text: '🏃 拼命逃跑', target: 'flee_ocean', effect: 'sawIt', time: 3 }
+  ], {left:'📍 海洋馆前',right:'⏳ 15:43'}, 2);
+
+  S('enter_ocean_hall', `海洋馆内部远比外面大。幽蓝水箱无源发光，水中巨大阴影游动。
+墙上贴满便签：<span class="italic">"不要理解。理解是污染。"</span>最深处一面镜子，镜中你在<span class="warning-text">微笑</span>，但你没笑。
+地面刻着：<span class="mythic-text">"第三层·感知之渊——凡注视者，皆被注视。"</span>`, [
+    { text: '🪞 触碰镜子', target: 'touch_mirror', effect: 'c5', time: 5 },
+    { text: '📝 阅读墙上便签', target: 'read_notes_ocean', time: 4 },
+    { text: '🏃 逃离海洋馆', target: 'flee_ocean_hall', time: 3 }
+  ], {left:'📍 海洋馆内部',right:'⏳ 时间模糊'}, 6);
+
+  S('touch_mirror', `镜面温热如皮肤。镜中"你"伸手握住你手腕——<span class="warning-text">从镜内</span>。
+剧痛中画面涌入：建造者举行仪式；兔子深夜直立行走；狮子围圈守护石板；虚线如血管脉动。
+你看到七层深渊的图景——这是第三层。下方还有四层。
+醒来时在海洋馆外，地图虚线<span class="highlight">消失</span>。你知道了不该知道的事，获得了奇异的清醒。`, [
+    { text: '🧠 带着真相前往狮子区', target: 'awakened_path', effect: 'c5', time: 8 }
+  ], {left:'📍 海洋馆外',right:'⏳ 16:00'}, 5);
+
+  S('read_notes_ocean', `便签背面不同笔迹：<span class="highlight">"它是从虚线来的。狮子守裂缝。兔子是眼。黑衣是嘴——他们选择沉默。规则是围墙。但围墙有七层，我们只在第三层。"</span>
+所有便签同时飘落，水箱阴影翻腾。`, [
+    { text: '🏃 逃离海洋馆', target: 'flee_ocean_hall_partial', effect: 'c5', time: 3 }
+  ], {left:'📍 海洋馆内部',right:'⏳ 16:05'}, 4);
+
+  S('flee_ocean_hall', `你拼命跑出海洋馆。身后玻璃碎裂声，<span class="highlight">湿漉沉重的脚步声</span>追赶。
+回到兔子园，所有兔子<span class="warning-text">全部看着你</span>。`, [
+    { text: '🏃 尽快离开兔子园', target: 'leave_rabbit_hurried', time: 4 }
+  ], {left:'📍 兔子园',right:'⏳ 16:10'}, 3);
+
+  S('flee_ocean_hall_partial', `你逃出海洋馆，便签内容在脑中回响。回到兔子园，白兔不在，地面爪印划出：<span class="warning-text">"日落前，去狮子那里。"</span>`, [
+    { text: '🦁 前往狮子区', target: 'lion_zone_with_clue', effect: 'c6', time: 6 },
+    { text: '🚪 尝试离开动物园', target: 'try_exit', time: 8 }
+  ], {left:'📍 兔子园',right:'⏳ 16:15'}, 3);
+
+  S('awakened_path', `你从海洋馆走出，步伐平稳。<span class="highlight">理解了</span>一些事：动物园是边界，虚线是裂缝，兔子是哨兵，狮子是守护者。
+你知道"它"已注意到你。因为理解是双向的。<span class="italic">当你凝视深渊，深渊也凝视你。</span>`, [
+    { text: '🦁 坚定走向狮子区', target: 'lion_final_path', effect: 'c6', time: 7 }
+  ], {left:'📍 觉醒之路',right:'⏳ 16:20'}, 8);
+
+  S('leave_rabbit', `你移开视线离开兔子园。<span class="italic">遵守规则的感觉很好——像有什么在保护你。</span>远处狮子低吼沉稳有力。`, [
+    { text: '🦁 前往狮子区', target: 'lion_zone', time: 6 },
+    { text: '🏛 前往游客中心', target: 'visitor_center', time: 5 }
+  ], {left:'📍 主路',right:'⏳ 15:35'}, 4);
+
+  S('flee_rabbit_zone', `你跑出兔子园，太阳穴剧痛。<span class="warning-text">有什么在跟着你</span>——影子太长了，空气太稠了。`, [
+    { text: '🦁 跑向狮子区', target: 'lion_zone_desperate', time: 5 },
+    { text: '🏛 跑向游客中心', target: 'visitor_center_desp', time: 5 },
+    { text: '🏃 在园区内奔跑', target: 'run_in_park', effect: 'ran', time: 2 }
+  ], {left:'📍 兔子园外',right:'⏳ 15:45'}, 3);
+
+  S('run_in_park', `你奔跑起来。<span class="warning-text">违反规则第一条。</span>空气凝固，路灯熄灭。灌木中大型物体移动。
+地面变软如皮肤。摔倒后你发现自己在陌生小路上，浓雾环绕。`, [
+    { text: '🌫 寻找出路', target: 'lost_in_fog', time: 10 }
+  ], {left:'📍 ???',right:'⏳ 迷失'}, 2);
+
+  S('lost_in_fog', `雾中走着，偶有高大扭曲影子闪过。雾散一些，两条路：一条发光的"出口"门，另一条通往狮子区。
+"出口"门把手<span class="warning-text">湿润</span>，像刚被舔过。`, [
+    { text: '🚪 走向"出口"', target: 'fake_exit', time: 4 },
+    { text: '🦁 走向狮子区', target: 'lion_zone_desperate', time: 6 }
+  ], {left:'📍 雾中',right:'⏳ 时间迷失'}, 10);
+
+  S('fake_exit', `推开门，门外不是停车场，而是<span class="highlight">海洋馆内部</span>。镜子前，镜中的你<span class="warning-text">疯狂大笑</span>。
+手指变长，指甲变厚，皮肤长出白色绒毛。<span class="warning-text">你正在变成兔子。</span>`, [
+    { text: '🐰 接受改变', target: 'ending_d_assimilation', time: 1 },
+    { text: '💥 拼命反抗砸碎镜子', target: 'smash_mirror', time: 2 }
+  ], {left:'📍 海洋馆',right:'⏳ 永恒'}, 4);
+
+  S('smash_mirror', `你一拳砸碎镜子。碎片划过手臂，疼痛带来<span class="highlight">一瞬间清醒</span>。海洋馆崩塌，水中阴影涌入。
+混乱中出现通道，尽头是狮子区围栏。`, [
+    { text: '🧗 爬向通道', target: 'lion_final_desperate', time: 5 }
+  ], {left:'📍 崩塌的海洋馆',right:'⏳ 17:30'}, 2);
+
+  S('lion_zone', `狮子区位于园区中心。三只雄狮趴在岩石上，<span class="highlight">过于正常</span>。一只抬头，金色眼睛深邃平静。
+信息牌："狮子是动物园最早的居民。它们在建园前已在此。"`, [
+    { text: '👀 静静观察狮子', target: 'observe_lions', time: 5 },
+    { text: '🔮 与狮子对视', target: 'stare_lion', time: 3 },
+    { text: '🚶 离开', target: 'visitor_center', time: 5 }
+  ], {left:'📍 狮子区',right:'⏳ 15:50'}, 6);
+
+  S('lion_zone_early', `你提前来到狮子区。三只雄狮安静趴在岩石上，围成三角形。中心一块石板刻着古老符号。
+一只狮子抬头看你，金色眼睛似在<span class="highlight">等待</span>。`, [
+    { text: '🪨 接近石板', target: 'approach_stone', effect: 'c6', time: 5 },
+    { text: '👀 与狮子对视', target: 'stare_lion_deep', time: 3 }
+  ], {left:'📍 狮子区',right:'⏳ 15:30'}, 8);
+
+  S('lion_zone_with_clue', `狮子们围成三角形守护石板。石板符号与你所知线索吻合。
+一只狮子抬头，金色眼睛深邃平静。<span class="italic">它在等待。</span>`, [
+    { text: '🪨 尝试接近石板', target: 'approach_stone', effect: 'c6', time: 5 },
+    { text: '🔮 与狮子深度对视', target: 'stare_lion_deep', time: 3 },
+    { text: '👀 保持距离观察', target: 'observe_lions_safe', time: 4 }
+  ], {left:'📍 狮子区',right:'⏳ 16:25'}, 6);
+
+  S('stare_lion', `对视中，狮子瞳孔映出<span class="highlight">动物园地图</span>——虚线勾勒裂缝。无声信息传递：<span class="italic">"日落前回来。我们会帮你。"</span>`, [
+    { text: '📌 记住狮子的话', target: 'visitor_center', effect: 'c6', time: 5 }
+  ], {left:'📍 狮子区',right:'⏳ 16:00'}, 3);
+
+  S('stare_lion_deep', `深度对视。你看到<span class="highlight">真相碎片</span>：动物园是"锚点"，稳定现实与异常空间边界。七层深渊，此为第三层。
+狮子守护石板——唯一安全通道。更深层还有更古老的存在。`, [
+    { text: '🪨 感谢狮子走向石板', target: 'approach_stone', effect: 'c6', time: 4 }
+  ], {left:'📍 狮子区',right:'⏳ 16:30'}, 3);
+
+  S('observe_lions', `保持距离观察。狮子安静守护石板。符号与海洋馆便签符号一致——比动物园古老得多。`, [
+    { text: '🪨 日落前决定接近石板', target: 'approach_stone', time: 5 },
+    { text: '🏛 去游客中心', target: 'visitor_center', time: 5 }
+  ], {left:'📍 狮子区',right:'⏳ 16:05'}, 4);
+
+  S('observe_lions_safe', `你观察石板符号，与线索吻合。狮子抬头看你一眼，继续守护。`, [
+    { text: '🪨 接近石板', target: 'approach_stone', time: 5 },
+    { text: '🏛 探索其他地方', target: 'visitor_center', time: 5 }
+  ], {left:'📍 狮子区',right:'⏳ 16:35'}, 4);
+
+  S('approach_stone', `石板在你靠近时<span class="highlight">微微发光</span>。符号：圆被虚线穿过，一端兔子一端狮子，中心小圆写"出口"。
+<span class="italic">你明白了。</span>狮子守护真正的出口——离开异常空间的出口。代价是留下一部分自我。`, [
+    { text: '🖐 触摸石板接受代价', target: 'resolve_stone_ending', time: 2 },
+    { text: '⏸ 犹豫不决', target: 'hesitate_stone', time: 3 },
+    { text: '❌ 拒绝代价另寻出路', target: 'decline_cost', time: 2 },
+    { text: '🔮 尝试与石板"对话"', target: 'speak_to_stone', effect: 'c8', time: 4 }
+  ], {left:'📍 石板前',right:'⏳ 关键时刻'}, 5);
+
+  S('speak_to_stone', `你把手悬在石板上方，心中默念疑问。石板光芒转为<span class="mythic-text">紫色</span>。
+一个古老声音在脑中响起：<span class="mythic-text">"第三层的旅者……你想知道更多？那么，看吧。"</span>
+你被拉入幻象——看到七层深渊的全貌。第三层是"感知之渊"，第四层是"记忆之海"，第五层是"意志之炉"……
+在第七层，一个巨大的、由无数眼睛组成的<span class="warning-text">存在</span>缓缓转向你。`, [
+    { text: '😱 从幻象中挣脱', target: 'hesitate_stone', effect: 'c7', time: 3 },
+    { text: '🧠 继续观看', target: 'witness_abyss', effect: 'c8', time: 5 }
+  ], {left:'📍 石板幻象',right:'⏳ ???'}, 4);
+
+  S('witness_abyss', `你看到第七层的"王"——<span class="mythic-text">虚空守望者</span>。它由无数破碎现实组成。
+它"看"了你一眼。那一瞬间，你理解了：动物园只是第三层的入口。还有四个入口散落在世界各处。
+"王"的声音：<span class="warning-text">"你可以选择成为守门人……或者成为门。"</span>`, [
+    { text: '🚪 选择成为守门人', target: 'ending_a_guardian', time: 2 },
+    { text: '🏃 拼命逃离幻象', target: 'hesitate_stone', time: 3 }
+  ], {left:'📍 第七层幻象',right:'⏳ 超时'}, 5);
+
+  S('hesitate_stone', `你手指悬在石板上方。狮子低吼<span class="highlight">催促</span>。天色迅速变暗。"它"在靠近。`, [
+    { text: '🖐 下定决心触摸石板', target: 'resolve_stone_ending', time: 2 },
+    { text: '🏃 在日落前尝试逃出', target: 'try_exit_sunset', time: 6 }
+  ], {left:'📍 石板前',right:'⏳ 日落将至'}, 3);
+
+  S('decline_cost', `你收回手。狮子低头似遗憾。石板光芒黯淡。你转身离开。
+天色已暗，路灯亮起。<span class="warning-text">日落了。</span>`, [
+    { text: '🌙 夜色中寻找出口', target: 'night_search', time: 8 },
+    { text: '🏛 返回游客中心', target: 'visitor_center_night', time: 6 }
+  ], {left:'📍 狮子区外',right:'⏳ 日落'}, 2);
+
+  S('night_search', `夜色动物园是另一个世界。兔子们<span class="highlight">全部站立</span>，红眼如灯。黑衣员工列队无声行走。
+他们走向虚线区域——那里有扇白天不存在的门。`, [
+    { text: '🚶 跟随黑衣员工', target: 'follow_workers', time: 8 },
+    { text: '🫣 躲藏直到天亮', target: 'hide_dawn', time: 20 },
+    { text: '🔦 独自探索夜间的动物园', target: 'night_explore', time: 10 }
+  ], {left:'📍 夜色动物园',right:'⏳ 19:00'}, 8);
+
+  S('night_explore', `你独自探索。在废弃的旋转木马旁，发现一个<span class="highlight">黑衣员工蹲在地上</span>。他抬起头——他<span class="mythic-text">还有一只眼睛</span>。
+他用那只眼睛看着你，嘴唇微动："我叫陈远。三年前进来的。帮我……找到我的名字牌。在游客中心失物招领处。"`, [
+    { text: '🆔 去游客中心找名字牌', target: 'find_nameplate', effect: 'c8', time: 10 },
+    { text: '😰 害怕陷阱，拒绝离开', target: 'hide_dawn', time: 15 }
+  ], {left:'📍 旋转木马',right:'⏳ 19:30'}, 10);
+
+  S('find_nameplate', `你在游客中心失物招领处翻找。找到一个积灰的名字牌：<span class="highlight">"陈远 · 第三层实习守门人"</span>。
+旁边还有一本登记簿，记录着：<span class="italic">"陈远——于第三年迷失。若有人找到此牌，请归还。他将恢复一只眼睛。"</span>`, [
+    { text: '🆔 把名字牌带回给陈远', target: 'return_nameplate', effect: 'c8', time: 8 },
+    { text: '📖 先阅读登记簿更多内容', target: 'read_register', time: 6 }
+  ], {left:'📍 游客中心',right:'⏳ 20:00'}, 10);
+
+  S('read_register', `登记簿记载：动物园成立于1973年。每十年需要一名新的"守门人"。目前第三层缺一名。
+上一任守门人于三年前"失明"，沦为普通黑衣员工。若归还名字牌，他将恢复视力并可以<span class="highlight">告诉你离开的捷径</span>。`, [
+    { text: '🆔 立刻归还名字牌', target: 'return_nameplate', effect: 'c8', time: 6 }
+  ], {left:'📍 游客中心',right:'⏳ 20:06'}, 6);
+
+  S('return_nameplate', `你把名字牌交给陈远。他接过的瞬间，空洞的眼眶中<span class="highlight">重新浮现一只眼睛</span>——金色的，像狮子的眼睛。
+他长舒一口气："谢谢。作为回报，我告诉你——<span class="mythic-text">石板不是唯一出口。在旋转木马地下，有一条通往第四层的密道。但第四层比这里危险十倍。你自己选。"</span>`, [
+    { text: '🪨 还是选择石板（安全出口）', target: 'approach_stone', effect: 'c6', time: 5 },
+    { text: '🎠 前往旋转木马密道（进入第四层）', target: 'descend_to_fourth', effect: 'c7', time: 8 }
+  ], {left:'📍 旋转木马',right:'⏳ 20:30'}, 8);
+
+  S('descend_to_fourth', `陈远带你到旋转木马下方。地板掀开，一段螺旋楼梯向下延伸。
+楼梯口的标牌：<span class="mythic-text">"第四层·记忆之海——凡遗忘者，皆被遗忘。"</span>
+陈远说："我只能送你到这里。下面……你要面对自己的记忆。"`, [
+    { text: '🌊 走下楼梯', target: 'fourth_layer', effect: 'c7', time: 10 }
+  ], {left:'📍 密道入口',right:'⏳ 21:00'}, 8);
+
+  S('fourth_layer', `第四层是一片<span class="highlight">无尽的浅水区</span>。水面如镜，映出你过去的记忆——童年、初恋、遗憾、恐惧。
+水中游动着半透明的鱼，每条鱼都是一个被遗忘的游客的记忆。
+远处有一座小岛，岛上有一扇门。门旁石碑：<span class="mythic-text">"交出你最珍贵的记忆，换取通行。"</span>`, [
+    { text: '🏝 走向小岛交出记忆', target: 'ending_a_memory', time: 8 },
+    { text: '🐟 尝试捕捉记忆鱼', target: 'catch_memory_fish', time: 6 },
+    { text: '🔙 退回第三层', target: 'return_from_fourth', effect: 'fledFromFourth', time: 6 }
+  ], {left:'📍 第四层',right:'⏳ 时间停止'}, 10);
+
+  S('catch_memory_fish', `你捉住一条鱼。鱼在你手中化为<span class="highlight">一段不属于你的记忆</span>——一个名叫"林薇"的女性，她曾是第二层的守门人。
+她发现了一个秘密：<span class="mythic-text">"第七层的'王'并非邪恶。它在阻止更深层的东西涌上来。动物园是封印的一部分。"</span>`, [
+    { text: '🏝 带着这个秘密去小岛', target: 'ending_a_memory', effect: 'c8', time: 6 },
+    { text: '🔙 返回第三层报告狮子', target: 'return_from_fourth_with_truth', effect: 'c7', time: 8 }
+  ], {left:'📍 第四层',right:'⏳ 时间停止'}, 6);
+
+  S('return_from_fourth', `你退回第三层。陈远还在楼梯口等你。"你回来了？下面的东西……不好对付吧。"
+你知道自己曾经逃离过什么。那片无尽的浅水区，那些记忆的鱼——你选择了退缩。`, [
+    { text: '🪨 前往石板离开', target: 'approach_stone', time: 5 }
+  ], {left:'📍 密道入口',right:'⏳ 21:30'}, 6);
+
+  S('return_from_fourth_with_truth', `你带着第四层的秘密回到第三层。陈远听你讲述后，神色凝重："原来如此……'王'是在保护我们？"
+你决定将这个消息告诉狮子。`, [
+    { text: '🦁 去狮子区分享真相', target: 'lion_share_truth', effect: 'c8', time: 7 }
+  ], {left:'📍 密道入口',right:'⏳ 21:40'}, 8);
+
+  S('lion_share_truth', `你来到狮子区，将第四层所见告知狮子。狮子们听完，同时低吼——那声音像在<span class="highlight">共鸣</span>。
+石板光芒转为温暖的金色。狮子用无声的语言告诉你：<span class="mythic-text">"你解开了第三层的秘密。现在你可以选择：成为第三层的新守门人，或者带着全部记忆安全离开。"</span>`, [
+    { text: '🛡 成为第三层守门人', target: 'ending_a_guardian', time: 3 },
+    { text: '🚪 带着全部记忆离开', target: 'ending_s_true', time: 2 }
+  ], {left:'📍 狮子区',right:'⏳ 22:00'}, 7);
+
+  S('follow_workers', `你跟在黑衣员工队伍后面。他们走进虚线之门，进入<span class="highlight">巨大地下空间</span>。
+墙壁发光纹路与石板符号一致。中央搏动着<span class="warning-text">黑色球体</span>，表面不断变化如液态影子。`, [
+    { text: '🕳 靠近黑色球体', target: 'ending_d_abyss', time: 2 },
+    { text: '🔙 悄悄退后逃离', target: 'escape_underground', time: 5 }
+  ], {left:'📍 地下空间',right:'⏳ 深夜'}, 8);
+
+  S('escape_underground', `你悄悄退出地下。回到地面时天边微亮。你<span class="highlight">幸存</span>了。
+晨光中狮子们安静趴着，向你点了点头。`, [
+    { text: '🌅 在晨光中走向出口', target: 'ending_b_survivor', time: 5 }
+  ], {left:'📍 狮子区',right:'⏳ 黎明'}, 5);
+
+  S('hide_dawn', `你在废弃储藏室躲了一整夜。紧闭双眼捂住耳朵，<span class="highlight">拒绝认知</span>。
+天亮后走出，头发多了几缕白色。一切看似正常了。`, [
+    { text: '🚶 走向出口', target: 'ending_b_gray', time: 4 }
+  ], {left:'📍 储藏室',right:'⏳ 6:30'}, 20);
+
+  S('visitor_center', `游客中心空荡老旧。柜台后黑衣员工姿势僵硬。墙上明信片地图<span class="warning-text">没有虚线</span>。
+收音机播放："尊敬的游客，请在日落前离开。重复，请前往狮子区。"`, [
+    { text: '💳 购买明信片', target: 'buy_postcard', time: 3 },
+    { text: '🗣 与黑衣员工交谈', target: 'talk_worker_center', time: 3 },
+    { text: '🚶 离开', target: 'leave_center', time: 2 }
+  ], {left:'📍 游客中心',right:'⏳ 16:00'}, 5);
+
+  S('visitor_center_desp', `你冲进游客中心，空无一人。收音机："<span class="warning-text">它已经出来了。躲起来。不要看它。</span>"`, [
+    { text: '🦁 听从广播去狮子区', target: 'lion_zone_desperate', time: 5 },
+    { text: '🚪 尝试从大门离开', target: 'try_exit', time: 8 }
+  ], {left:'📍 游客中心',right:'⏳ 16:40'}, 5);
+
+  S('visitor_center_night', `夜色中游客中心惨白灯光。收音机："<span class="warning-text">它出来了。躲！不要看！不要理解！</span>"窗外路灯下巨大影子。`, [
+    { text: '🫣 躲在柜台后', target: 'hide_counter', time: 10 },
+    { text: '🚪 从后门逃走', target: 'escape_backdoor', time: 4 }
+  ], {left:'📍 游客中心',right:'⏳ 深夜'}, 6);
+
+  S('hide_counter', `你蜷缩在柜台后。门被推开，<span class="highlight">有东西进来</span>。空气寒冷，收音机自动播放："我看到你了。"
+安静后，柜台上多张纸条："你很幸运。下次不会了。"`, [
+    { text: '🌅 天亮后离开', target: 'ending_b_gray', time: 10 }
+  ], {left:'📍 游客中心',right:'⏳ 凌晨'}, 10);
+
+  S('escape_backdoor', `后门巷道尽头是狮子区侧面。狮子们醒着，金色眼睛在黑暗中<span class="highlight">温暖发光</span>。石板微微发光。`, [
+    { text: '🪨 走向石板', target: 'resolve_stone_ending', time: 3 },
+    { text: '🦁 翻围栏与狮子待在一起', target: 'stay_with_lions', time: 5 }
+  ], {left:'📍 狮子区侧面',right:'⏳ 深夜'}, 4);
+
+  S('stay_with_lions', `你翻进围栏。狮子们让出位置让你坐在中间。<span class="highlight">奇异安宁</span>笼罩你。"它"不敢靠近。
+天亮时狮子触碰石板：<span class="italic">这是出路。</span>`, [
+    { text: '🖐 在狮子守护下触摸石板', target: 'resolve_stone_ending', effect: 'stayedWithLions', time: 2 }
+  ], {left:'📍 狮子区',right:'⏳ 黎明'}, 5);
+
+  S('try_exit', `你走向大门。大门<span class="highlight">比看起来远</span>——走了五分钟仍在同样距离。<span class="italic">空间扭曲了。</span>`, [
+    { text: '🚶 坚持走向大门', target: 'keep_walking', time: 15 },
+    { text: '🦁 返回找狮子', target: 'lion_zone_desperate', time: 6 }
+  ], {left:'📍 大门附近',right:'⏳ 傍晚'}, 8);
+
+  S('keep_walking', `走到脚底水泡，天色全暗。大门近在眼前。触碰铁门——
+醒来躺在入口地上，天色早晨。口袋纸条：<span class="warning-text">"你出去了，但一部分永远留在这里。"</span>耳朵似乎长了一点。`, [
+    { text: '🚶 接受现实离开', target: 'ending_b_gray', time: 2 }
+  ], {left:'📍 出口',right:'⏳ 早晨'}, 15);
+
+  S('try_exit_sunset', `日落最后一丝光线中你冲向大门。太阳沉入地平线。身后动物园在<span class="highlight">变化</span>。`, [
+    { text: '🏃 冲刺！', target: 'ending_a_sunset', time: 2 },
+    { text: '🔙 停下来回头看一眼', target: 'look_back', time: 1 }
+  ], {left:'📍 大门',right:'⏳ 日落瞬间'}, 6);
+
+  S('look_back', `回头瞬间看到<span class="warning-text">"它"</span>——无法描述的压倒性存在。思维被填满。
+再次醒来已在外面。<span class="highlight">三天记忆空白</span>。`, [
+    { text: '🚶 带着疑问离开', target: 'ending_c_memory', time: 1 }
+  ], {left:'📍 外面',right:'⏳ ???'}, 1);
+
+  S('lion_zone_desperate', `你跌撞来到狮子区。"它"很近。狮子们站起低吼，<span class="highlight">形成屏障</span>。石板发光，狮子让开路。`, [
+    { text: '🪨 冲向石板', target: 'resolve_stone_ending', effect: 'stayedWithLions', time: 2 },
+    { text: '⏸ 犹豫代价', target: 'hesitate_stone', time: 2 }
+  ], {left:'📍 狮子区',right:'⏳ 危急'}, 5);
+
+  S('lion_final_path', `以觉醒者身份来到狮子区。狮子们低头致敬。石板前所未有地发光。
+<span class="italic">你已支付代价——理解本身就是最沉重的代价。</span>`, [
+    { text: '🖐 触摸石板完整离开', target: 'ending_s_true', time: 2 }
+  ], {left:'📍 狮子区',right:'⏳ 觉醒'}, 7);
+
+  S('lion_final_desperate', `从崩塌海洋馆爬出，浑身是伤但清醒。狮子区在前方，石板光芒穿透夜色。最后机会。`, [
+    { text: '🖐 触摸石板', target: 'resolve_stone_ending', time: 2 }
+  ], {left:'📍 狮子区',right:'⏳ 最终'}, 5);
+
+  S('leave_rabbit_hurried', `快步离开兔子园。主路气氛已变。路灯昏黄闪烁。长椅上黑衣员工<span class="warning-text">猛抬头</span>，无眼面孔对着你。嘴唇动："去狮子区……"`, [
+    { text: '🦁 听从去狮子区', target: 'lion_zone_with_clue', effect: 'c4', time: 5 },
+    { text: '🚫 忽略去游客中心', target: 'visitor_center', effect: 'ignoredWorker', time: 5 }
+  ], {left:'📍 主路',right:'⏳ 16:20'}, 4);
+
+  S('leave_center', `离开游客中心。主路更加压抑。钟声敲响下午四点。距日落两小时。`, [
+    { text: '🦁 狮子区', target: 'lion_zone', time: 6 },
+    { text: '🐇 兔子园', target: 'rabbit_zone', time: 6 }
+  ], {left:'📍 主路',right:'⏳ 16:05'}, 2);
+
+  S('buy_postcard', `明信片上地图无虚线。手指划过虚线位置时<span class="highlight">指尖变冷</span>。黑衣员工手指触碰你——冰冷干燥如纸。`, [
+    { text: '🚶 带明信片离开', target: 'leave_center', effect: 'c2', time: 2 }
+  ], {left:'📍 游客中心',right:'⏳ 16:02'}, 3);
+
+  S('talk_worker_center', `试图交谈。黑衣员工喉咙嗡鸣加剧。一支笔自行在纸上写：<span class="warning-text">"别说话。规则保护你我。去狮子区。快。"</span>`, [
+    { text: '🦁 默默离开去狮子区', target: 'lion_zone_with_clue', effect: 'c4', time: 4 }
+  ], {left:'📍 游客中心',right:'⏳ 16:03'}, 3);
+
+  S('flee_ocean', `拼命跑离海洋馆。蓝光消失，被注视感<span class="highlight">没消失</span>。回到主路，天色更暗。`, [
+    { text: '🦁 前往狮子区', target: 'lion_zone_desperate', time: 5 },
+    { text: '🏛 前往游客中心', target: 'visitor_center', time: 5 }
+  ], {left:'📍 主路',right:'⏳ 16:30'}, 3);
+
+  S('nightfall_force', `<span class="warning-text">太阳完全落下。</span>整个动物园陷入黑暗。路灯亮起惨白的光。
+规则第六条被打破——你没有在日落前离开。
+现在，夜间的规则生效了。`, [
+    { text: '🌙 面对夜色中的动物园', target: 'night_search', time: 5 }
+  ], {left:'📍 园区',right:'⏳ 日落'}, 0);
+
+  // ========== 结局场景 ==========
+  S('ending_s_true', `<div class="ending-display"><div class="ending-rank s-rank">S</div><div class="ending-title">「清醒者·完整」</div><div class="ending-desc">金色光芒包裹你。醒来时在停车场，阳光明媚。你<span class="highlight">记得一切</span>——虚线、海洋馆、七层深渊、"王"的真相。口袋里纸条：<span class="italic">"你未被污染。你理解了，但选择了保持自己。你是守护者之一——在外面守护边界。保持沉默，但不要忘记。"</span>你是极少数完整离开的访客。</div><div class="ending-clues-summary">🏆 完美结局 · 完整真相 + 完整自我</div></div>`, [{text:'🔄 重新开始', target:'start', effect:'reset'}], {left:'📍 外面',right:'☀ 新开始'});
+
+  S('ending_a_lion', `<div class="ending-display"><div class="ending-rank a-rank">A</div><div class="ending-title">「狮子的恩惠」</div><div class="ending-desc">狮子守护下离开。记忆大部分完好，但"它"的面貌模糊了。狮子替你承受了一部分注视。金色眼睛是你最后的清晰记忆。</div><div class="ending-clues-summary">🦁 优质结局 · 狮子庇护，部分记忆模糊</div></div>`, [{text:'🔄 重新开始', target:'start', effect:'reset'}], {left:'📍 外面',right:'☀ 安全'});
+
+  S('ending_a_sunset', `<div class="ending-display"><div class="ending-rank a-rank">A</div><div class="ending-title">「落日狂奔」</div><div class="ending-desc">在最后一缕阳光消失前冲出大门。你安全了。但影子比之前<span class="highlight">长了一点</span>。</div><div class="ending-clues-summary">🏃 优质结局 · 日落逃脱，轻微后遗症</div></div>`, [{text:'🔄 重新开始', target:'start', effect:'reset'}], {left:'📍 门外',right:'🌅 日落'});
+
+  S('ending_a_guardian', `<div class="ending-display"><div class="ending-rank a-rank">A</div><div class="ending-title">「守门人」</div><div class="ending-desc">你选择成为第三层的新守门人。狮子们接纳了你。你的眼睛变成<span class="mythic-text">金色</span>。你将守护裂缝，直到下一个觉醒者到来。</div><div class="ending-clues-summary">🛡 特殊结局 · 成为守门人，守护边界</div></div>`, [{text:'🔄 重新开始', target:'start', effect:'reset'}], {left:'📍 第三层',right:'🌌 永恒守护'});
+
+  S('ending_a_memory', `<div class="ending-display"><div class="ending-rank a-rank">A</div><div class="ending-title">「记忆之海」</div><div class="ending-desc">你交出最珍贵的记忆，换取通过第四层的门。安全离开了——但失去了某段重要的过去。心里空了一块。</div><div class="ending-clues-summary">🌊 特殊结局 · 以记忆为代价离开</div></div>`, [{text:'🔄 重新开始', target:'start', effect:'reset'}], {left:'📍 第四层出口',right:'🌫 遗忘'});
+
+  S('ending_b_survivor', `<div class="ending-display"><div class="ending-rank b-rank">B</div><div class="ending-title">「幸存者」</div><div class="ending-desc">晨光中走出动物园。你活下来了。后颈多了一个<span class="highlight">淡淡的印记</span>——圆被虚线穿过。深夜会梦见狮子金色的眼睛。</div><div class="ending-clues-summary">🏕️ 普通结局 · 幸存但有永恒印记</div></div>`, [{text:'🔄 重新开始', target:'start', effect:'reset'}], {left:'📍 外面',right:'🌅 早晨'});
+
+  S('ending_b_gray', `<div class="ending-display"><div class="ending-rank b-rank">B</div><div class="ending-title">「灰白之痕」</div><div class="ending-desc">安全离开。鬓角多了一缕白发，眼睛在某些光线下微微泛红。看到兔子时心跳加速。再也不会踏入任何动物园。</div><div class="ending-clues-summary">🐇 普通结局 · 身体轻微变化</div></div>`, [{text:'🔄 重新开始', target:'start', effect:'reset'}], {left:'📍 正常生活',right:'☀ 之后'});
+
+  S('ending_b_return', `<div class="ending-display"><div class="ending-rank b-rank">B</div><div class="ending-title">「归来者」</div><div class="ending-desc">石板的光芒将你送回了外面的世界。你安全了。但你知道自己<span class="highlight">曾经逃离过什么</span>。你进入过第四层"记忆之海"，看到了那片无尽的浅水区——然后你退了回来。你选择了安全的出口，而不是继续深入。每当夜深人静，你都会想起那道通往第四层的楼梯。<span class="warning-text">你带回了部分真相，但选择了逃避。</span>这个认知将伴随你一生。</div><div class="ending-clues-summary">🔙 普通结局 · 知道太多但选择逃避</div></div>`, [{text:'🔄 重新开始', target:'start', effect:'reset'}], {left:'📍 外面',right:'🌙 不安'});
+
+  S('ending_c_memory', `<div class="ending-display"><div class="ending-rank c-rank">C</div><div class="ending-title">「空白的三天」</div><div class="ending-desc">你回到正常世界。记忆中有三天空白。梦中闪过幽蓝的水、金色的眼睛、某个无法描述的存在。醒来时泪流满面。</div><div class="ending-clues-summary">🧠 不良结局 · 记忆抹除，潜意识创伤</div></div>`, [{text:'🔄 重新开始', target:'start', effect:'reset'}], {left:'📍 医院',right:'⏳ 三天后'});
+
+  S('ending_early_leave_c', `<div class="ending-display"><div class="ending-rank c-rank">C</div><div class="ending-title">「明智的懦弱」</div><div class="ending-desc">你转身离开。完全没有进入。安全了。但偶尔会想起那个无眼的黑衣员工。有些问题永远没有答案。</div><div class="ending-clues-summary">🚶 安全结局 · 未探索，平安但无知</div></div>`, [{text:'🔄 重新开始', target:'start', effect:'reset'}], {left:'📍 门外',right:'☀ 安全'});
+
+  S('ending_c_lost', `<div class="ending-display"><div class="ending-rank c-rank">C</div><div class="ending-title">「迷失者」</div><div class="ending-desc">你在雾中走了一整夜。天亮时躺在动物园门口长椅上。口袋纸条：<span class="italic">"下次，请遵守规则。"</span></div><div class="ending-clues-summary">🌫 不良结局 · 被放回，收到警告</div></div>`, [{text:'🔄 重新开始', target:'start', effect:'reset'}], {left:'📍 入口长椅',right:'🌅 早晨'});
+
+  S('ending_d_assimilation', `<div class="ending-display"><div class="ending-rank d-rank">D</div><div class="ending-title">「兔子的晚餐」</div><div class="ending-desc">你变成了<span class="warning-text">纯白兔子</span>。被放入兔子园围栏。新游客来时，你用红眼看着他们，试图警告——但不能说话。你成为了哨兵，成为了"它"的眼睛。</div><div class="ending-clues-summary">🐰 最坏结局 · 同化为动物园的一部分</div></div>`, [{text:'🔄 重新开始', target:'start', effect:'reset'}], {left:'📍 兔子园',right:'🐇 永恒'});
+
+  S('ending_d_abyss', `<div class="ending-display"><div class="ending-rank d-rank">D</div><div class="ending-title">「它看见你了」</div><div class="ending-desc">你靠近黑色球体。所有真相同时涌入——人类心智无法承受。<span class="warning-text">自我溶解</span>。你成为黑衣员工，没有眼睛，只有永恒的沉默守护。</div><div class="ending-clues-summary">🕳️ 最坏结局 · 意识被真相摧毁</div></div>`, [{text:'🔄 重新开始', target:'start', effect:'reset'}], {left:'📍 地下',right:'🖤 永恒'});
+
+  S('ending_d_deeper', `<div class="ending-display"><div class="ending-rank e-rank">E</div><div class="ending-title">「深渊召唤」</div><div class="ending-desc">你在第四层选择继续深入。走向第五层——<span class="mythic-text">意志之炉</span>。然后就没有然后了。没有人知道第五层以下是什么。只知道进去的人从未回来。</div><div class="ending-clues-summary">⚠ 隐藏结局 · 深入未知，彻底消失</div></div>`, [{text:'🔄 重新开始', target:'start', effect:'reset'}], {left:'📍 第五层?',right:'💀 消失'});
+
+  S('ending_e_void', `<div class="ending-display"><div class="ending-rank e-rank">E</div><div class="ending-title">「虚空守望者」</div><div class="ending-desc">你在幻象中接受了"王"的邀请。你成为了<span class="mythic-text">虚空的一部分</span>。你的意识扩散到整个深渊，能看到所有七层、所有入口、所有守门人。但你不再是"你"了。你是守望者之一。</div><div class="ending-clues-summary">🌌 隐藏结局 · 成为虚空的一部分</div></div>`, [{text:'🔄 重新开始', target:'start', effect:'reset'}], {left:'📍 第七层',right:'🌌 永恒守望'});
+
+  // ========== 游戏引擎 ==========
+  let currentSceneId = 'start';
+  let typingTimer = null;
+  let isTyping = false;
+  let fullText = '';
+
+  function typeText(text, cb) {
+    if(typingTimer) clearTimeout(typingTimer);
+    isTyping = true; fullText = text;
+    dom.sceneText.innerHTML = ''; let i=0, displayed='';
+    function type(){
+      if(i<text.length){
+        if(text[i]==='<'){ let end=text.indexOf('>',i); if(end!==-1){ displayed+=text.substring(i,end+1); i=end+1; dom.sceneText.innerHTML=displayed+'<span class="typing-cursor">|</span>'; typingTimer=setTimeout(type,5); return; } }
+        displayed+=text[i]; i++; dom.sceneText.innerHTML=displayed+'<span class="typing-cursor">|</span>';
+        let delay = (text[i-1]==='。'||text[i-1]==='…')?100:(text[i-1]==='；'||text[i-1]==='，')?50:15+Math.random()*12;
+        typingTimer=setTimeout(type, delay);
+      } else { dom.sceneText.innerHTML=displayed; isTyping=false; if(cb) cb(); }
+    }
+    type();
+  }
+
+  function skipTyping() { if(isTyping&&typingTimer){ clearTimeout(typingTimer); isTyping=false; dom.sceneText.innerHTML=fullText; } }
+
+  // 结局分派逻辑
+  function resolveStoneEnding() {
+    // 优先级1：从第四层逃回来的 → 归来者
+    if (state.flags.fledFromFourth) return 'ending_b_return';
+    // 优先级2：狮子场景选择"带着全部记忆离开" → 清醒者
+    if (state.clues.c5 && state.clues.c6 && state.clues.c7 && state.clues.c8) return 'ending_s_true';
+    // 优先级3：与狮子待在一起或在危急时冲向石板 → 狮子的恩惠
+    if (state.flags.stayedWithLions || state.flags.sawIt) return 'ending_a_lion';
+    // 优先级4：默认 → 幸存者
+    return 'ending_b_survivor';
+  }
+
+  function loadScene(id) {
+    // 特殊处理：石板结局分派
+    if (id === 'resolve_stone_ending') {
+      id = resolveStoneEnding();
+    }
+    if(isTyping) skipTyping();
+    let scene = scenes[id]; if(!scene) return;
+    currentSceneId = id; state.visits++;
+    if(scene.timeCost) updateTime(state.time - scene.timeCost);
+    dom.footerLeft.textContent = scene.footer?.left||'📍 园区';
+    dom.footerRight.textContent = scene.footer?.right||'🌫 未知';
+    dom.choices.innerHTML = '';
+    if(state.visits>20) { dom.sceneText.innerHTML=scene.text; fullText=scene.text; isTyping=false; }
+    else typeText(scene.text, ()=>{});
+    scene.choices.forEach((ch,i)=>{
+      let btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      if(ch.text.includes('逃')||ch.text.includes('跑')||ch.text.includes('离开')||ch.text.includes('拼命')) btn.classList.add('danger-choice');
+      if(ch.text.includes('狮子')||ch.text.includes('石板')||ch.text.includes('遵守')||ch.text.includes('听从')) btn.classList.add('safe-choice');
+      if(ch.text.includes('第四层')||ch.text.includes('深渊')||ch.text.includes('守门人')||ch.text.includes('虚空')) btn.classList.add('mythic-choice');
+      btn.textContent = ch.text;
+      btn.addEventListener('click', ()=>{
+        if(isTyping) { skipTyping(); setTimeout(()=>executeChoice(ch),150); }
+        else executeChoice(ch);
+      });
+      dom.choices.appendChild(btn);
+    });
+    if(id.startsWith('ending_')) { dom.content.classList.add('flash-warning'); setTimeout(()=>dom.content.classList.remove('flash-warning'),800); }
+  }
+
+  function executeChoice(ch) {
+    if(ch.effect) {
+      if(ch.effect==='reset') { resetGame(); return; }
+      if(state.clues.hasOwnProperty(ch.effect)) state.clues[ch.effect]=true;
+      else if(state.flags.hasOwnProperty(ch.effect)) state.flags[ch.effect]=true;
+    }
+    if(ch.time) updateTime(state.time - ch.time);
+    state.choices.push({from:currentSceneId, text:ch.text});
+    updateClues();
+    loadScene(ch.target);
+  }
+
+  function resetGame() {
+    Object.keys(state.clues).forEach(k=>state.clues[k]=false);
+    Object.keys(state.flags).forEach(k=>state.flags[k]=false);
+    state.flags.nightfallTriggered = false;
+    state.flags.fledFromFourth = false;
+    state.flags.stayedWithLions = false;
+    state.choices=[]; state.visits=0; state.time=900;
+    updateTime(900); updateClues();
+    loadScene('start');
+  }
+
+  dom.sceneText.addEventListener('click', ()=>{ if(isTyping) skipTyping(); });
+  document.addEventListener('keydown', (e)=>{
+    if(isTyping && (e.key===' '||e.key==='Enter')) { e.preventDefault(); skipTyping(); return; }
+    let btns = dom.choices.querySelectorAll('.choice-btn');
+    let n = parseInt(e.key);
+    if(n>=1 && n<=btns.length) { e.preventDefault(); btns[n-1].click(); }
+  });
+
+  updateTime(900); updateClues(); loadScene('start');
+  console.log('🦁 动物园规则怪谈·深渊回廊 已修复 | 15+结局 | 归来者可正常触发');
+})();
+</script>
+</body>
+</html>
