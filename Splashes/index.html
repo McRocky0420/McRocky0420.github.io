@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的世界——闪烁标语</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #0d0b0f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Courier New', 'Consolas', 'PingFang SC', monospace;
+            padding: 1.5rem;
+        }
+
+        .terminal {
+            max-width: 820px;
+            width: 100%;
+            background: #18151e;
+            border-radius: 28px;
+            padding: 2.2rem 2rem 2.8rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+            border: 1px solid #2f2a3a;
+            transition: all 0.2s;
+        }
+
+        .header-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 2.2rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid #2d2738;
+        }
+
+        .dot {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+
+        .header-title {
+            margin-left: 8px;
+            color: #7d728f;
+            font-size: 0.85rem;
+            letter-spacing: 1.2px;
+            font-weight: 400;
+            opacity: 0.7;
+            text-transform: uppercase;
+        }
+
+        .splash-screen {
+            background: #12101a;
+            border-radius: 18px;
+            padding: 2rem 1.8rem;
+            min-height: 340px;
+            border: 1px solid #2a2438;
+            box-shadow: inset 0 6px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            transition: background 0.1s;
+        }
+
+        .splash-text {
+            font-size: 1.6rem;
+            line-height: 1.6;
+            font-weight: 500;
+            color: #d4cce6;
+            text-align: center;
+            word-break: break-word;
+            font-family: 'Courier New', 'PingFang SC', monospace;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 12px rgba(160, 130, 220, 0.15);
+            padding: 0.2rem 0;
+            transition: all 0.08s ease;
+        }
+
+        .splash-sub {
+            margin-top: 1.6rem;
+            font-size: 0.9rem;
+            color: #6b5f7e;
+            letter-spacing: 2px;
+            font-weight: 300;
+            border-top: 1px dashed #2b2538;
+            padding-top: 1.2rem;
+            width: 80%;
+            text-align: center;
+            opacity: 0.6;
+        }
+
+        .splash-sub span {
+            background: #1f1b2a;
+            padding: 0.2rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.8rem 1.2rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            background: #26212f;
+            border: 1px solid #3a3347;
+            color: #cbc0df;
+            padding: 0.7rem 1.8rem;
+            border-radius: 60px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.6px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: #363045;
+            border-color: #5b4d72;
+            color: #f0eaff;
+            transform: scale(1.02);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-primary {
+            background: #6b4f9e;
+            border-color: #7d5fb0;
+            color: #f5f0ff;
+            box-shadow: 0 4px 16px rgba(90, 60, 160, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #8264b8;
+            border-color: #9a7ccf;
+            color: #ffffff;
+        }
+
+        .btn-icon {
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .footer-info {
+            margin-top: 1.8rem;
+            text-align: center;
+            color: #3d354a;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            border-top: 1px solid #25202f;
+            padding-top: 1.2rem;
+            opacity: 0.5;
+        }
+
+        /* 闪烁光标装饰 */
+        .cursor-blink {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background: #a28fd0;
+            margin-left: 4px;
+            vertical-align: text-bottom;
+            animation: blink 1s step-end infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 0; }
+        }
+
+        /* 随机闪烁的小彩蛋 */
+        .sparkle {
+            position: absolute;
+            pointer-events: none;
+            font-size: 1.6rem;
+            opacity: 0.1;
+            animation: sparkleFade 2s ease-out forwards;
+        }
+
+        @keyframes sparkleFade {
+            0% { opacity: 0.6; transform: scale(0.8) rotate(0deg); }
+            100% { opacity: 0; transform: scale(1.8) rotate(40deg); }
+        }
+
+        @media (max-width: 480px) {
+            .terminal { padding: 1.5rem; }
+            .splash-text { font-size: 1.2rem; }
+            .splash-screen { padding: 1.5rem 1rem; min-height: 240px; }
+            .btn { padding: 0.5rem 1.2rem; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="terminal" role="main" aria-label="启动画面模拟器">
+    <!-- 窗口装饰条 -->
+    <div class="header-bar">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+        <span class="header-title">◆ 启动日志 ◆</span>
+    </div>
+
+    <!-- 主画面 -->
+    <div class="splash-screen" id="splashScreen">
+        <div class="splash-text" id="splashText">
+            Minecraft
+            <span class="cursor-blink"></span>
+        </div>
+        <div class="splash-sub">
+            <span id="splashSub">✨ 我的世界——闪烁标语 ✨</span>
+        </div>
+    </div>
+
+    <!-- 控制按钮 -->
+    <div class="controls">
+        <button class="btn btn-primary" id="randomBtn">
+            <span class="btn-icon">🎲</span> 随机一句
+        </button>
+        <button class="btn" id="resetBtn">
+            <span class="btn-icon">↺</span> 重置
+        </button>
+        <button class="btn" id="flashBtn">
+            <span class="btn-icon">⚡</span> 闪烁模式
+        </button>
+    </div>
+
+    <div class="footer-info">
+        <span id="counterInfo">📋 共 400+ 条 · 点击随机</span>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ----- 你提供的超长标语列表 (全部保留) -----
+        const splashList = [
+            "As seen on TV!", "Awesome!", "100% pure!", "May contain nuts!", "More polygons!",
+            "Moderately attractive!", "Limited edition!", "Flashing letters!", "It's here!",
+            "Best in class!", "It's finished!", "Kind of dragon free!", "Excitement!",
+            "More than 500 sold!", "One of a kind!", "Heaps of hits on YouTube!", "Indev!",
+            "Spiders everywhere!", "Check it out!", "Holy cow, man!", "It's a game!",
+            "Made in Sweden!", "Uses LWJGL!", "Reticulating splines!", "Minecraft!", "Yaaay!",
+            "Singleplayer!", "Keyboard compatible!", "Ingots!", "Exploding creepers!",
+            "That's no moon!", "l33t!", "Create!", "Survive!", "Dungeon!", "Exclusive!",
+            "The bee's knees!", "Closed source!", "Classy!", "Wow!", "Not on steam!",
+            "Oh man!", "Awesome community!", "Pixels!", "Teetsuuuuoooo!", "Kaaneeeedaaaa!",
+            "Now with difficulty!", "Enhanced!", "90% bug free!", "Pretty!",
+            "12 herbs and spices!", "Fat free!", "Absolutely no memes!", "Free dental!",
+            "Ask your doctor!", "Cloud computing!", "Legal in Finland!", "Hard to label!",
+            "Technically good!", "Bringing home the bacon!", "Indie!", "GOTY!",
+            "Ceci n'est pas une title screen!", "Euclidian!", "Now in 3D!", "Inspirational!",
+            "Herregud!", "Complex cellular automata!", "Yes, sir!", "Played by cowboys!",
+            "Now on OpenGL 3.3 core profile!", "Thousands of colors!", "Try it!",
+            "Age of Wonders is better!", "Try the mushroom stew!", "Sensational!",
+            "Hot tamale, hot hot tamale!", "Play him off, keyboard cat!", "Guaranteed!",
+            "Macroscopic!", "Bring it on!", "Random splash!", "Call your mother!",
+            "Monster infighting!", "Loved by millions!", "Ultimate edition!", "Freaky!",
+            "You've got a brand new key!", "Water proof!", "Uninflammable!", "Whoa, dude!",
+            "All inclusive!", "Tell your friends!", "NP is not in P!", "Music by C418!",
+            "Livestreamed!", "Haunted!", "Polynomial!", "Terrestrial!", "All is full of love!",
+            "Full of stars!", "Scientific!", "Not as cool as Spock!", "Collaborate and listen!",
+            "Never dig down!", "Take frequent breaks!", "Not linear!", "Han shot first!",
+            "Nice to meet you!", "Buckets of lava!", "Ride the pig!", "Larger than Earth!",
+            "sqrt(-1) love you!", "Phobos anomaly!", "Punching wood!", "Falling off cliffs!",
+            "1% sugar!", "150% hyperbole!", "Synecdoche!", "Let's danec!",
+            "Seecret Friday update!", "Reference implementation!", "Kiss the sky!",
+            "20 GOTO 10!", "Verlet integration!", "Peter Griffin!", "Do not distribute!",
+            "Cogito ergo sum!", "4815162342 lines of code!", "A skeleton popped out!",
+            "The sum of its parts!", "BTAF used to be good!", "I miss ADOM!",
+            "umop-apisdn!", "OICU812!", "Bring me Ray Cokes!", "Finger-licking!",
+            "Thematic!", "Pneumatic!", "Sublime!", "Octagonal!", "Une baguette!",
+            "Gargamel plays it!", "Rita is the new top dog!", "SWM forever!",
+            "Representing Edsbyn!", "Matt Damon!", "Supercalifragilisticexpialidocious!",
+            "Consummate V's!", "Cow Tools!", "Double buffered!", "Fan fiction!",
+            "Flaxkikare!", "Jason! Jason! Jason!", "Hotter than the sun!",
+            "Internet enabled!", "Autonomous!", "Engage!", "Fantasy!", "DRR! DRR! DRR!",
+            "Kick it root down!", "Regional resources!", "Woo, facepunch!",
+            "Woo, somethingawful!", "Woo, tigsource!", "Woo, worldofminecraft!",
+            "Woo, reddit!", "Woo, 2pp!", "Google anlyticsed!", "Now supports åäö!",
+            "Give us Gordon!", "Tip your waiter!", "Very fun!", "12345 is a bad password!",
+            "Vote for net neutrality!", "Lives in a pineapple under the sea!",
+            "MAP11 has two names!", "Omnipotent!", "Gasp!", "...!",
+            "Bees, bees, bees, bees!", "Jag känner en bot!",
+            "This text is hard to read if you play the game at the default resolution, but at 1080p it's fine!",
+            "Haha, LOL!", "Hampsterdance!", "Menger sponge!", "idspispopd!",
+            "Eple (original edit)!", "So fresh, so clean!", "Slow acting portals!",
+            "Try the Nether!", "Don't look directly at the bugs!", "Oh, ok, Pigmen!",
+            "Finally with ladders!", "Scary!", "Play Minecraft, Watch Topgear, Get Pig!",
+            "Twittered about!", "Jump up, jump up, and get down!", "Joel is neat!",
+            "A riddle, wrapped in a mystery!", "This parrot is no more! It has ceased to be!",
+            "Welcome to your Doom!", "Stay a while, stay forever!", "Stay a while and listen!",
+            "Treatment for your rash!", "\"Autological\" is!", "Information wants to be free!",
+            "\"Almost never\" is an interesting concept!", "Lots of truthiness!",
+            "The creeper is a spy!", "Turing complete!", "It's groundbreaking!",
+            "Let our battle's begin!", "The sky is the limit!", "Jeb has amazing hair!",
+            "Ryan also has amazing hair!", "Casual gaming!", "Undefeated!",
+            "Kinda like Lemmings!", "Follow the train, CJ!", "Leveraging synergy!",
+            "This message will never appear on the splash screen, isn't that weird?",
+            "DungeonQuest is unfair!", "90210!", "Check out the far lands!",
+            "Tyrion would love it!", "Also try VVVVVV!", "Also try Super Meat Boy!",
+            "Also try Terraria!", "Also try Mount And Blade!", "Also try Project Zomboid!",
+            "Also try World of Goo!", "Also try Limbo!", "Also try Pixeljunk Shooter!",
+            "Also try Braid!", "That's super!", "Bread is pain!", "Read more books!",
+            "Khaaaaaaaaan!", "Less addictive than TV Tropes!", "More addictive than lemonade!",
+            "Bigger than a bread box!", "Millions of peaches!", "Fnord!",
+            "This is my true form!", "Don't bother with the clones!", "Pumpkinhead!",
+            "Made by Jeb!", "Has an ending!", "Finally complete!", "Feature packed!",
+            "Boots with the fur!", "Stop, hammertime!", "Testificates!", "Conventional!",
+            "Homeomorphic to a 3-sphere!", "Doesn't avoid double negatives!",
+            "Place ALL the blocks!", "Does barrel rolls!", "Meeting expectations!",
+            "PC gaming since 1873!", "Ghoughpteighbteau tchoghs!", "Déjà vu!", "Déjà vu!",
+            "Got your nose!", "Haley loves Elan!", "Afraid of the big, black bat!",
+            "Doesn't use the U-word!", "Child's play!", "See you next Friday or so!",
+            "From the streets of Södermalm!", "150 bpm for 400000 minutes!",
+            "Technologic!", "Funk soul brother!", "Pumpakungen!", "日本ハロー！",
+            "한국 안녕하세요!", "Helo Cymru!", "Cześć Polsko!", "你好中国！",
+            "Γεια σου Ελλάδα!", "My life for Aiur!", "Lennart lennart = new Lennart();",
+            "I see your vocabulary has improved!", "Who put it there?",
+            "You can't explain that!", "if not ok then return end",
+            "§1C§2o§3l§4o§5r§6m§7a§8t§9i§ac", "§kFUNKY LOL", "Big Pointy Teeth!",
+            "Bekarton guards the gate!", "Mmmph, mmph!", "Don't feed avocados to parrots!",
+            "Swords for everyone!", "Plz reply to my tweet!", ".party()!",
+            "Take her pillow!", "Put that cookie down!", "Pretty scary!",
+            "I have a suggestion.", "Now with extra hugs!", "Java 16 + 1 + 4 = 21!",
+            "Woah.", "HURNERJSGER?", "What's up, Doc?", "Now contains 32 random daily cats!",
+            "That's Numberwang!", "pls rt", "Do you want to join my server?",
+            "Put a little fence around it!", "Throw a blanket over it!",
+            "One day, somewhere in the future, my work will be quoted!",
+            "Now with additional stuff!", "Extra things!", "Yay, puppies for everyone!",
+            "So sweet, like a nice bon bon!", "Very influential in its circle!",
+            "Now With Multiplayer!", "Rise from your grave!",
+            "Warning! A huge battleship \"STEVE\" is approaching fast!",
+            "Blue warrior shot the food!", "Run, coward! I hunger!",
+            "Flavor with no seasoning!", "Strange, but not a stranger!",
+            "Tougher than diamonds, rich like cream!", "It swings, it jives!",
+            "Cruising streets for gold!", "Take an eggbeater and beat it against a skillet!",
+            "Make me a table, a funky table!", "Take the elevator to the mezzanine!",
+            "Stop being reasonable, this is the Internet!", "/give @a hugs 64",
+            "This is good for Realms.", "Any computer is a laptop if you're brave enough!",
+            "Do it all, everything!", "Where there is not light, there can spider!",
+            "GNU Terry Pratchett", "More Digital!", "doot doot", "Falling with style!",
+            "There's no stopping the Trollmaso", "Throw yourself at the ground and miss",
+            "Rule #1: it's never my fault", "Replaced molten cheese with blood?",
+            "Absolutely fixed relatively broken coordinates", "Boats FTW",
+            "Javalicious edition", "Should not be played while driving",
+            "You're going too fast!", "Don't feed chocolate to parrots!",
+            "The true meaning of covfefe", "An illusion! What are you hiding?",
+            "Something's not quite right...", "Thank you for the fish!",
+            "All rumors are true!", "Truly gone fishing!", "Rainbow turtle?",
+            "Something funny!", "I need more context.", "Ahhhhhh!",
+            "Don't worry, be happy!", "Water bottle!", "What's the question?",
+            "Plant a tree!", "Go to the dentist!", "What do you expect?",
+            "Look mum, I'm in a splash!", "It came from space.",
+            "Awesome game design right there!", "Ph1lza had a good run!",
+            "15 years of Mining and Crafting!", "Ping the human!",
+            "In case it isn't obvious, foxes aren't players.", "Buzzy Bees!",
+            "Minecraft Java Edition presents: Disgusting Bugs", "Wash your hands!",
+            "Soap and water!", "Support local businesses!", "Stay home and play games!",
+            "Stay safe!", "Stay strong!", "Cough or sneeze into your elbow!",
+            "Don’t touch your face!", "Support elderly relatives and friends!",
+            "Prepare, but don’t hoard!", "Gamers unite – separately in your own homes!",
+            "Save the world – stay inside!", "Shop for your elders!",
+            "Hang out with your friends online!", "Honey, I grew the bees!",
+            "Find your claw!", "Everybody do the Leif!", "<3 Max & 99 & Ducky!",
+            "Bushy eyebrows!", "Edit is a name!", "From free range developers!",
+            "Music by Lena Raine!", "Aww man!", "#minecraftfarms", "And my pickaxe!",
+            "Envision! Create! Share!", "Fabulous graphics!", "Also try Minecraft Dungeons!",
+            "Vanilla!", "May contain traces of citrus!", "Zoglin!?", "Black lives matter!",
+            "Be anti-racist!", "Learn about allyship!",
+            "Speak OUT against injustice and UP for equality!",
+            "Amplify and listen to BIPOC voices!", "Educate your friends on anti-racism!",
+            "Support the BIPOC community and creators!",
+            "Stand up for equality in your community!",
+            "[this splash text is now available]", "Contains simulated goats!",
+            "Home-made!", "There's <<a cat on ,my keyboard!~",
+            "The cutest predator you'll ever meet!", "Now you are thinking with pistons!",
+            "Get to the coppah!", "Board game version also available!",
+            "Honey, I waxed the copper!", "Plant-based light sources!",
+            "Made by \"real\" people!", "Shriek like a Sculk Shrieker!",
+            "Who let the frogs out?", "RIBBIT!", "Croak team!", "Nooooooooooooo!",
+            "Flower forest TM perfume", "Hat Fridays!", "Technoblade never dies!",
+            "You are valid!", "I'm glad you're here!", "You are welcome here!",
+            "Your gender is valid!", "Contains infinite genders!", "Made with lave!",
+            "This sand is sus", "Remember to brush your... ...teeth",
+            "Has working bookshelves!", "Sniff sniff...", "Place hanging sign here",
+            "Joule is neat too!", "Music by Aaron Cherof!", "Music by Kumi Tanioka!",
+            "Music by Amos Roddy!", "Flint and Steel!", "Chicken Jockey!",
+            "One does not simply walk to the Far Lands", "Music by Hyper Potions!"
+        ];
+
+        // DOM 元素
+        const splashText = document.getElementById('splashText');
+        const splashSub = document.getElementById('splashSub');
+        const randomBtn = document.getElementById('randomBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const flashBtn = document.getElementById('flashBtn');
+        const counterInfo = document.getElementById('counterInfo');
+        const splashScreen = document.getElementById('splashScreen');
+
+        let currentIndex = 0;
+        let flashInterval = null;
+        let isFlashing = false;
+
+        // 更新显示
+        function setSplash(index) {
+            const text = splashList[index] || "Minecraft";
+            splashText.innerHTML = text + ' <span class="cursor-blink"></span>';
+            // 随机子标语 (从列表中取一条不同的)
+            let subIndex = index;
+            while (subIndex === index && splashList.length > 1) {
+                subIndex = Math.floor(Math.random() * splashList.length);
+            }
+            const subText = splashList[subIndex] || "✨ 启动 ✨";
+            splashSub.innerHTML = `<span>✦ ${subText} ✦</span>`;
+            currentIndex = index;
+        }
+
+        // 随机一条
+        function randomSplash() {
+            if (splashList.length === 0) return;
+            let newIndex = currentIndex;
+            while (newIndex === currentIndex && splashList.length > 1) {
+                newIndex = Math.floor(Math.random() * splashList.length);
+            }
+            setSplash(newIndex);
+            // 计数更新
+            counterInfo.textContent = `📋 共 ${splashList.length} 条 · 当前 #${currentIndex + 1}`;
+        }
+
+        // 重置到第一条
+        function resetToFirst() {
+            if (splashList.length === 0) return;
+            setSplash(0);
+            counterInfo.textContent = `📋 共 ${splashList.length} 条 · 当前 #1`;
+        }
+
+        // 闪烁模式 (快速随机切换)
+        function toggleFlash() {
+            if (isFlashing) {
+                clearInterval(flashInterval);
+                flashInterval = null;
+                isFlashing = false;
+                flashBtn.textContent = '⚡ 闪烁模式';
+                flashBtn.style.background = '#26212f';
+                // 恢复当前显示
+                setSplash(currentIndex);
+                return;
+            }
+
+            // 开启闪烁
+            isFlashing = true;
+            flashBtn.textContent = '⏹ 停止闪烁';
+            flashBtn.style.background = '#6b4f9e';
+            // 先随机一次
+            randomSplash();
+            flashInterval = setInterval(() => {
+                // 快速随机
+                let newIdx = Math.floor(Math.random() * splashList.length);
+                setSplash(newIdx);
+                counterInfo.textContent = `📋 共 ${splashList.length} 条 · 闪烁中 ✦`;
+            }, 220);
+        }
+
+        // 初始化
+        function init() {
+            if (splashList.length === 0) {
+                splashText.textContent = '无标语';
+                splashSub.innerHTML = '<span>✨ 空空如也 ✨</span>';
+                counterInfo.textContent = '📋 0 条';
+                return;
+            }
+            const randomStart = Math.floor(Math.random() * splashList.length);
+            setSplash(randomStart);
+            counterInfo.textContent = `📋 共 ${splashList.length} 条 · 当前 #${currentIndex + 1}`;
+        }
+
+        // ----- 事件绑定 -----
+        randomBtn.addEventListener('click', randomSplash);
+
+        resetBtn.addEventListener('click', function() {
+            if (isFlashing) {
+                // 如果闪烁中，先停止
+                clearInterval(flashInterval);
+                flashInterval = null;
+                isFlashing = false;
+                flashBtn.textContent = '⚡ 闪烁模式';
+                flashBtn.style.background = '#26212f';
+            }
+            resetToFirst();
+        });
+
+        flashBtn.addEventListener('click', toggleFlash);
+
+        // 键盘快捷键：空格随机，R重置，F闪烁
+        document.addEventListener('keydown', function(e) {
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                if (isFlashing) {
+                    // 闪烁中按空格停止闪烁并随机一次
+                    clearInterval(flashInterval);
+                    flashInterval = null;
+                    isFlashing = false;
+                    flashBtn.textContent = '⚡ 闪烁模式';
+                    flashBtn.style.background = '#26212f';
+                    randomSplash();
+                } else {
+                    randomSplash();
+                }
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                if (isFlashing) {
+                    clearInterval(flashInterval);
+                    flashInterval = null;
+                    isFlashing = false;
+                    flashBtn.textContent = '⚡ 闪烁模式';
+                    flashBtn.style.background = '#26212f';
+                }
+                resetToFirst();
+            }
+            if (e.key === 'f' || e.key === 'F') {
+                toggleFlash();
+            }
+        });
+
+        // 双击屏幕重置
+        splashScreen.addEventListener('dblclick', function() {
+            if (isFlashing) {
+                clearInterval(flashInterval);
+                flashInterval = null;
+                isFlashing = false;
+                flashBtn.textContent = '⚡ 闪烁模式';
+                flashBtn.style.background = '#26212f';
+            }
+            resetToFirst();
+        });
+
+        // 启动
+        init();
+
+        // 控制台提示
+        console.log('🎮 快捷键: 空格=随机, R=重置, F=闪烁模式');
+    })();
+</script>
+
+</body>
+</html>
