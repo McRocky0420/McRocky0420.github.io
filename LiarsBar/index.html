@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>骗子酒馆 - LairsBar</title>
+    <style>
+        body {
+            background: #1e1e2e;
+            color: #cdd6f4;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #89b4fa;
+            text-align: center;
+            border-bottom: 2px solid #313244;
+            padding-bottom: 15px;
+        }
+        .desc {
+            text-align: center;
+            color: #6c7086;
+            margin-bottom: 20px;
+        }
+        pre {
+            background: #181825;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #a6adc8;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .back {
+            display: inline-block;
+            margin-top: 20px;
+            color: #89b4fa;
+            text-decoration: none;
+        }
+        .back:hover {
+            text-decoration: underline;
+        }
+        .badge {
+            background: #313244;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #a6adc8;
+        }
+    </style>
+</head>
+<body>
+    <h1>🃏 骗子酒馆 (LairsBar)</h1>
+    <p class="desc">简易版 · Copyright: McRocky <span class="badge">C++</span></p>
+
+    <pre>
+/*
+  简易版骗子酒馆游戏
+  Copyright:McRocky
+ */
+#include&lt;bits/stdc++.h&gt;
+#include&lt;conio.h&gt;
+#include&lt;windows.h&gt;
+using namespace std;
+int player,lplayer,doplayer,num,outnum,outpainum,reallynum,outpai,lifepeople;
+int j,q,k,a,Q,K,A,W,w,times,gunrand;
+char reallypai='0';
+bool ok=false,noliar=false,quit=false,mogui=false;
+vector&lt;int&gt; painum;
+vector&lt;char&gt; outpais;
+vector&lt;vector&lt;bool&gt;&gt; paiout;
+vector&lt;vector&lt;char&gt;&gt; pai;
+vector&lt;int&gt; guntime;
+vector&lt;string&gt; life;
+int checkalive()
+{
+    int alive=0;
+    for(int i=1; i&lt;=player; i++)
+    {
+        if(life[i]=="活着")
+        {
+            alive++;
+        }
+    }
+    return alive;
+}
+void fpai()
+{
+    for(int fplayer=1; fplayer&lt;=player; fplayer++)
+    {
+        if(life[fplayer]=="活着")
+        {
+            for(int fnum=1; fnum&lt;=5; fnum++)
+            {
+                ok=false;
+                while(ok==false)
+                {
+                    num=rand()%9;
+                    switch(num)
+                    {
+                        case 0:
+                            if(q>0)
+                            {
+                                q--;
+                                pai[fplayer][fnum]='q';
+                                ok=true;
+                            }
+                            break;
+                        case 1:
+                            if(k>0)
+                            {
+                                k--;
+                                pai[fplayer][fnum]='k';
+                                ok=true;
+                            }
+                            break;
+                        case 2:
+                            if(a>0)
+                            {
+                                a--;
+                                pai[fplayer][fnum]='a';
+                                ok=true;
+                            }
+                            break;
+                        case 3:
+                            if(j>0)
+                            {
+                                j--;
+                                pai[fplayer][fnum]='j';
+                                ok=true;
+                            }
+                            break;
+                        case 4:
+                            if(W>0)
+                            {
+                                W--;
+                                pai[fplayer][fnum]='W';
+                                ok=true;
+                            }
+                            break;
+                        case 5:
+                            if(w>0)
+                            {
+                                w--;
+                                pai[fplayer][fnum]='w';
+                                ok=true;
+                            }
+                            break;
+                        case 6:
+                            if(Q>0)
+                            {
+                                Q--;
+                                if(reallypai=='q')
+                                {
+                                    pai[fplayer][fnum]='Q';
+                                }
+                                else
+                                {
+                                    pai[fplayer][fnum]='q';
+                                }
+                                ok=true;
+                            }
+                            break;
+                        case 7:
+                            if(K>0)
+                            {
+                                K--;
+                                if(reallypai=='k')
+                                {
+                                    pai[fplayer][fnum]='K';
+                                }
+                                else
+                                {
+                                    pai[fplayer][fnum]='k';
+                                }
+                                ok=true;
+                            }
+                            break;
+                        case 8:
+                            if(A>0)
+                            {
+                                A--;
+                                if(reallypai=='a')
+                                {
+                                    pai[fplayer][fnum]='A';
+                                }
+                                else
+                                {
+                                    pai[fplayer][fnum]='a';
+                                }
+                                ok=true;
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+    }
+    cout&lt;&lt;"所有玩家的数据:"&lt;&lt;endl;
+    for(int file=1; file&lt;=player; file++)
+    {
+        cout&lt;&lt;"玩家"&lt;&lt;file&lt;&lt;":"&lt;&lt;guntime[file]&lt;&lt;"/6 "&lt;&lt;life[file]&lt;&lt;endl;
+    }
+    cout&lt;&lt;"|?|    |"&lt;&lt;reallypai&lt;&lt;"|"&lt;&lt;endl
+        &lt;&lt;endl;
+    for(int i=1; i&lt;=player; i++)
+    {
+        cout&lt;&lt;"("&lt;&lt;i&lt;&lt;") ";
+        if(life[i]=="活着")
+        {
+            for(int b=1; b&lt;=5; b++)
+            {
+                Sleep(150);
+                cout&lt;&lt;"|?|";
+            }
+        }
+        else
+        {
+            cout&lt;&lt;"该玩家已死亡,不发牌";
+        }
+        cout&lt;&lt;endl
+            &lt;&lt;endl;
+    }
+}
+void csh()
+{
+    guntime.resize(10);
+    life.resize(10);
+    pai.resize(10);
+    paiout.resize(10);
+    painum.resize(10);
+    outpais.resize(10);
+    j=4;
+    q=5;
+    k=5;
+    a=5;
+    Q=1;
+    K=1;
+    A=1;
+    W=1;
+    w=1;
+    lifepeople=player;
+    times=0;
+    quit=false;
+    for(int i=1; i&lt;=player; i++)
+    {
+        guntime[i]=0;
+        life[i]="活着";
+        for(int b=1; b&lt;=6; b++)
+        {
+            pai[i].push_back(' ');
+            paiout[i].push_back(false);
+        }
+        painum[i]=5;
+    }
+}
+void csh2()
+{
+    j=4;
+    q=5;
+    k=5;
+    a=5;
+    Q=1;
+    K=1;
+    A=1;
+    W=1;
+    w=1;
+    times=0;
+    outnum=0;
+    quit=false;
+    for(int i=1; i&lt;=player; i++)
+    {
+        pai[i].clear();
+        paiout[i].clear();
+        for(int b=1; b&lt;=6; b++)
+        {
+            pai[i].push_back(' ');
+            paiout[i].push_back(false);
+        }
+        painum[i]=5;
+    }
+}
+void kreallypai()
+{
+    for(int i=1; i&lt;=3; i++)
+    {
+        reallynum=rand()%3;
+        switch(reallynum)
+        {
+            case 0:
+                reallypai='q';
+                break;
+            case 1:
+                reallypai='k';
+                break;
+            case 2:
+                reallypai='a';
+                break;
+        }
+        cout&lt;&lt;"所有玩家的数据:"&lt;&lt;endl;
+        for(int file=1; file&lt;=player; file++)
+        {
+            cout&lt;&lt;"玩家"&lt;&lt;file&lt;&lt;":"&lt;&lt;guntime[file]&lt;&lt;"/6 "&lt;&lt;life[file]&lt;&lt;endl;
+        }
+        cout&lt;&lt;"真牌是|"&lt;&lt;reallypai&lt;&lt;"|"&lt;&lt;endl;
+        Sleep(300);
+        system("cls");
+        cout&lt;&lt;"所有玩家的数据:"&lt;&lt;endl;
+        for(int file=1; file&lt;=player; file++)
+        {
+            cout&lt;&lt;"玩家"&lt;&lt;file&lt;&lt;":"&lt;&lt;guntime[file]&lt;&lt;"/6 "&lt;&lt;life[file]&lt;&lt;endl;
+        }
+        cout&lt;&lt;"真牌是 | "&lt;&lt;endl;
+        Sleep(300);
+        system("cls");
+    }
+}
+void kgun(int gunplayer)
+{
+    guntime[gunplayer]++;
+    doplayer=0;
+    cout&lt;&lt;"玩家"&lt;&lt;gunplayer&lt;&lt;"正在自枪";
+    for(int i=1; i&lt;=3; i++)
+    {
+        cout&lt;&lt;".";
+        Sleep(500);
+    }
+    switch(guntime[gunplayer])
+    {
+        case 0:
+            gunrand=rand()%6;
+            if(gunrand==0)
+            {
+                life[gunplayer]="死了";
+            }
+            break;
+        case 1:
+            gunrand=rand()%5;
+            if(gunrand==0)
+            {
+                life[gunplayer]="死了";
+            }
+            break;
+        case 2:
+            gunrand=rand()%4;
+            if(gunrand==0)
+            {
+                life[gunplayer]="死了";
+            }
+            break;
+        case 3:
+            gunrand=rand()%3;
+            if(gunrand==0)
+            {
+                life[gunplayer]="死了";
+            }
+            break;
+        case 4:
+            gunrand=rand()%2;
+            if(gunrand==0)
+            {
+                life[gunplayer]="死了";
+            }
+            break;
+        case 5:
+            gunrand=rand()%1;
+            if(gunrand==0)
+            {
+                life[gunplayer]="死了";
+            }
+            break;
+    }
+    quit=true;
+    cout&lt;&lt;"是"&lt;&lt;(life[gunplayer]=="死了"?"实弹!":"空弹!")&lt;&lt;endl
+        &lt;&lt;"请按任意键下一局..."&lt;&lt;endl;
+    system("pause>nul&&cls");
+}
+void playerdo()
+{
+    if(checkalive()==1)
+    {
+        system("cls");
+        cout&lt;&lt;"========================================"&lt;&lt;endl
+            &lt;&lt;"                游戏结束!               "&lt;&lt;endl
+            &lt;&lt;"========================================"&lt;&lt;endl
+            &lt;&lt;"    场上玩家数:1                        "&lt;&lt;endl;
+        for(int i=1; i&lt;=player; i++)
+        {
+            if(life[i]=="活着")
+            {
+                cout&lt;&lt;"    玩家名称:玩家"&lt;&lt;i&lt;&lt;endl;
+                break;
+            }
+        }
+        cout&lt;&lt;"========================================"&lt;&lt;endl
+            &lt;&lt;"请按任意键退出游戏..."&lt;&lt;endl;
+        system("pause>nul");
+        return;
+    }
+    cout&lt;&lt;"当前真牌:|"&lt;&lt;reallypai&lt;&lt;"|"&lt;&lt;endl
+        &lt;&lt;"出牌堆:"&lt;&lt;endl;
+    for(int i=1; i&lt;=5; i++)
+    {
+        if(paiout[lplayer][i]==true)
+        {
+            cout&lt;&lt;"|?| ";
+        }
+    }
+    cout&lt;&lt;endl
+        &lt;&lt;"接下来将是玩家"&lt;&lt;doplayer&lt;&lt;"的回合,开始前请确认其他玩家已经死去..."&lt;&lt;endl;
+    system("pause>nul&&cls");
+    cout&lt;&lt;"玩家"&lt;&lt;doplayer&lt;&lt;"回合"&lt;&lt;endl
+        &lt;&lt;"当前真牌:|"&lt;&lt;reallypai&lt;&lt;"|"&lt;&lt;endl
+        &lt;&lt;"所有玩家的数据:"&lt;&lt;endl;
+    for(int file=1; file&lt;=player; file++)
+    {
+        cout&lt;&lt;"玩家"&lt;&lt;file&lt;&lt;":"&lt;&lt;guntime[file]&lt;&lt;"/6 "&lt;&lt;life[file]&lt;&lt;(file==doplayer?" (当前玩家)":"")&lt;&lt;endl;
+    }
+    cout&lt;&lt;"所有玩家的牌:"&lt;&lt;endl
+        &lt;&lt;"编号 1   2   3   4   5"&lt;&lt;endl;
+    for(int splayer=1; splayer&lt;=player; splayer++)
+    {
+        cout&lt;&lt;"("&lt;&lt;splayer&lt;&lt;") ";
+        if(life[splayer]=="活着")
+        {
+            for(int snum=1; snum&lt;=5; snum++)
+            {
+                if(paiout[splayer][snum]==false)
+                {
+                    cout&lt;&lt;"|";
+                    if(splayer==doplayer)
+                    {
+                        cout&lt;&lt;pai[splayer][snum];
+                    }
+                    else
+                    {
+                        cout&lt;&lt;"?";
+                    }
+                    cout&lt;&lt;"| ";
+                }
+                else
+                {
+                    cout&lt;&lt;"    ";
+                }
+            }
+        }
+        else
+        {
+            cout&lt;&lt;"该玩家已死亡,无牌";
+        }
+        cout&lt;&lt;(splayer==doplayer?" (当前玩家)":"")&lt;&lt;endl
+            &lt;&lt;endl;
+    }
+    cout&lt;&lt;"出牌堆:"&lt;&lt;endl;
+    for(int i=1; i&lt;=5; i++)
+    {
+        if(paiout[lplayer][i]==true)
+        {
+            cout&lt;&lt;"|?| ";
+        }
+    }
+    cout&lt;&lt;endl
+        &lt;&lt;"A:出牌"&lt;&lt;endl
+        &lt;&lt;(times!=1?"B:质疑(Liar)":"这是本局第一次操作，无法质疑!")&lt;&lt;endl
+        &lt;&lt;"C:放弃这一局(自枪)"&lt;&lt;endl
+        &lt;&lt;"请键入你要进行的操作:";
+    while(!_kbhit())
+    {
+    }
+    switch(_getch())
+    {
+        case 'a':
+        case 'A':
+        {
+            cout&lt;&lt;endl;
+            outnum=painum[doplayer]+1;
+            while((outnum>painum[doplayer])||(outnum>3)||(outnum&lt;=0))
+            {
+                cout&lt;&lt;"请输入你要出牌的数量(1-"&lt;&lt;(painum[doplayer]>3?3:painum[doplayer])&lt;&lt;"):";
+                cin&gt;&gt;outnum;
+            }
+            for(int outsum=1; outsum&lt;=outnum; outsum++)
+            {
+                outpainum=0;
+                while(outpainum&lt;1||outpainum>5||paiout[doplayer][outpainum])
+                {
+                    for(int i=1; i&lt;=5; i++)
+                    {
+                        if(!paiout[doplayer][i])
+                        {
+                            cout&lt;&lt;"["&lt;&lt;i&lt;&lt;"]:"&lt;&lt;pai[doplayer][i]&lt;&lt;" ";
+                        }
+                    }
+                    cout&lt;&lt;"请输入你要出的第"&lt;&lt;outsum&lt;&lt;"个牌的位置(1-5):";
+                    cin&gt;&gt;outpainum;
+                    outpai=pai[doplayer][outpainum];
+                    if(outpainum&lt;1||outpainum>5)
+                    {
+                        cout&lt;&lt;"无效位置!请输入1-5..."&lt;&lt;endl;
+                    }
+                    else if(outnum!=1&&((pai[doplayer][outpainum]=='Q')||(pai[doplayer][outpainum]=='K')||(pai[doplayer][outpainum]=='A')))
+                    {
+                        cout&lt;&lt;"魔鬼牌只能单出!"&lt;&lt;endl
+                            &lt;&lt;"是否只出这张魔鬼牌(Y/N)?";
+                        while(!_kbhit())
+                        {
+                        }
+                        switch(_getch())
+                        {
+                            case 'y':
+                            case 'Y':
+                                outnum=1;
+                                outpais[1]=pai[doplayer][outpainum];
+                                break;
+                            case 'n':
+                            case 'N':
+                                outsum--;
+                                break;
+                        }
+                    }
+                    else if(paiout[doplayer][outpainum])
+                    {
+                        cout&lt;&lt;"这张牌已经出过了!"&lt;&lt;endl;
+                    }
+                }
+                paiout[doplayer][outpainum]=true;
+                outpais[outsum]=outpai;
+                cout&lt;&lt;"打出牌:"&lt;&lt;outpais[outsum]&lt;&lt;endl;
+            }
+            painum[doplayer]-=outnum;
+            cout&lt;&lt;"请按任意键结束..."&lt;&lt;endl;
+            system("pause>nul&&cls");
+            break;
+        }
+        case 'b':
+        case 'B':
+        {
+            if(times==1)
+            {
+                cout&lt;&lt;"无效操作!"&lt;&lt;endl;
+                system("cls");
+                cout&lt;&lt;"等待所有玩家回来..."&lt;&lt;endl;
+                system("pause>nul&&cls");
+                cout&lt;&lt;"因为玩家1试图质疑空玩家的牌,疑似规避差牌被质疑而自枪,所以作为惩罚,ta必须自枪"&lt;&lt;endl
+                    &lt;&lt;"请按任意键让ta自枪..."&lt;&lt;endl;
+                system("pause>nul&&cls");
+                kgun(1);
+                break;
+            }
+            system("cls");
+            cout&lt;&lt;"等待所有玩家回来..."&lt;&lt;endl;
+            system("pause>nul&&cls");
+            cout&lt;&lt;"玩家"&lt;&lt;doplayer&lt;&lt;"决定质疑上一位玩家的牌"&lt;&lt;endl
+                &lt;&lt;"请按任意键开牌"&lt;&lt;endl;
+            system("pause>nul&&cls");
+            for(int i=1; i&lt;=outnum; i++)
+            {
+                cout&lt;&lt;"|?| ";
+            }
+            Sleep(500);
+            system("cls");
+            for(int i=1; i&lt;=outnum; i++)
+            {
+                cout&lt;&lt;" |  ";
+            }
+            Sleep(500);
+            system("cls");
+            for(int i=1; i&lt;=outnum; i++)
+            {
+                cout&lt;&lt;"|"&lt;&lt;outpais[i]&lt;&lt;"| ";
+            }
+            cout&lt;&lt;"请按任意键验牌..."&lt;&lt;endl;
+            system("pause>nul&&cls");
+            noliar=true;
+            mogui=false;
+            for(int i=1; i&lt;=outnum; i++)
+            {
+                cout&lt;&lt;"|"&lt;&lt;outpais[i]&lt;&lt;"| ";
+            }
+            cout&lt;&lt;endl;
+            for(int i=1; i&lt;=outnum; i++)
+            {
+                if((outpais[i]=='Q')||(outpais[i]=='K')||(outpais[i]=='A'))
+                {
+                    mogui=true;
+                    cout&lt;&lt;">v&lt; ";
+                }
+                else if((outpais[i]=='W')||(outpais[i]=='w')||(outpais[i]=='j')||(outpais[i]==reallypai))
+                {
+                    cout&lt;&lt;" v  ";
+                }
+                else
+                {
+                    noliar=false;
+                    cout&lt;&lt;" x  ";
+                }
+                Sleep(500);
+            }
+            cout&lt;&lt;endl;
+            if(mogui==true)
+            {
+                cout&lt;&lt;"玩家"&lt;&lt;lplayer&lt;&lt;"出了魔鬼牌!"&lt;&lt;endl
+                    &lt;&lt;"请按任意键让除玩家"&lt;&lt;lplayer&lt;&lt;"之外的所有玩家自枪..."&lt;&lt;endl;
+                system("pause>nul&&cls");
+                for(int i=1; i&lt;=player; i++)
+                {
+                    if(i!=lplayer)
+                    {
+                        kgun(i);
+                    }
+                }
+            }
+            else if(noliar==true)
+            {
+                cout&lt;&lt;"玩家"&lt;&lt;lplayer&lt;&lt;"是好人!"&lt;&lt;endl
+                    &lt;&lt;"请按任意键让玩家"&lt;&lt;doplayer&lt;&lt;"自枪..."&lt;&lt;endl;
+                system("pause>nul&&cls");
+                kgun(doplayer);
+            }
+            else
+            {
+                cout&lt;&lt;"玩家"&lt;&lt;lplayer&lt;&lt;"是Liar!"&lt;&lt;endl
+                    &lt;&lt;"请按任意键让玩家"&lt;&lt;lplayer&lt;&lt;"自枪..."&lt;&lt;endl;
+                system("pause>nul&&cls");
+                kgun(lplayer);
+            }
+            break;
+        }
+        case 'c':
+        case 'C':
+        {
+            system("cls");
+            cout&lt;&lt;"等待所有玩家回来..."&lt;&lt;endl;
+            system("pause>nul&&cls");
+            cout&lt;&lt;"玩家"&lt;&lt;doplayer&lt;&lt;"决定放弃这一局,所以ta要自枪!"&lt;&lt;endl
+                &lt;&lt;"请按任意键让ta自枪"&lt;&lt;endl;
+            system("pause>nul&&cls");
+            kgun(doplayer);
+            break;
+        }
+        default:
+        {
+            system("cls");
+            cout&lt;&lt;"等待所有玩家回来..."&lt;&lt;endl;
+            system("pause>nul&&cls");
+            cout&lt;&lt;"玩家"&lt;&lt;doplayer&lt;&lt;"按下了非法按键,疑似规避差牌被质疑而自枪,所以作为惩罚,ta必须自枪!"&lt;&lt;endl
+                &lt;&lt;"请按任意键让ta自枪"&lt;&lt;endl;
+            system("pause>nul&&cls");
+            kgun(doplayer);
+            break;
+        }
+    }
+}
+int main()
+{
+    system("mode con:cols=40 lines=25");
+    srand(time(0));
+    system("cls");
+    cout&lt;&lt;"========================================"&lt;&lt;endl
+        &lt;&lt;"            骗子酒馆(简易版)"&lt;&lt;endl
+        &lt;&lt;"========================================"&lt;&lt;endl
+        &lt;&lt;"1.每轮游戏会出一张真牌,你会有一堆牌,尽量保证不被他人看见"&lt;&lt;endl
+        &lt;&lt;"2.小写字母表示普通牌,大写字母表示魔鬼牌,W表示大王,w表示小王,大小王和j也是真牌"&lt;&lt;endl
+        &lt;&lt;"3.如果魔鬼牌被质疑,除出牌者之外的所有人都要自枪,恶魔牌只能单出"&lt;&lt;endl
+        &lt;&lt;"4.每次你可以选择任意不多于3张牌打出,同时你需要大喊真牌的点数及出牌的个数"&lt;&lt;endl
+        &lt;&lt;"5.如果你不相信上家的出牌,可以大喊'liar'来质疑"&lt;&lt;endl
+        &lt;&lt;"6.如果质疑的牌都是真牌,则质疑者自枪,否则被质疑者自枪"&lt;&lt;endl
+        &lt;&lt;"7.枪有1个实弹和5个空弹,若为空弹,则安然无事,若为实弹,则死亡"&lt;&lt;endl
+        &lt;&lt;"8.轮到任意玩家回合时,其他玩家请死去"&lt;&lt;endl
+        &lt;&lt;"========================================"&lt;&lt;endl
+        &lt;&lt;"*请按任意键开始游戏...                  "&lt;&lt;endl;
+    system("pause>nul&&cls");
+    while(player&lt;2||player>4)
+    {
+        cout&lt;&lt;"有几个人玩(1&lt;player&lt;5)?"&lt;&lt;endl;
+        cin&gt;&gt;player;
+    }
+    csh();
+    while(1)
+    {
+        csh2();
+        cout&lt;&lt;"请按任意键开真牌..."&lt;&lt;endl;
+        system("pause>nul&&cls");
+        kreallypai();
+        cout&lt;&lt;"所有玩家的数据:"&lt;&lt;endl;
+        for(int file=1; file&lt;=player; file++)
+        {
+            cout&lt;&lt;"玩家"&lt;&lt;file&lt;&lt;":"&lt;&lt;guntime[file]&lt;&lt;"/6 "&lt;&lt;life[file]&lt;&lt;endl;
+        }
+        cout&lt;&lt;"真牌是|"&lt;&lt;reallypai&lt;&lt;"|"&lt;&lt;endl
+            &lt;&lt;"请按任意键发牌..."&lt;&lt;endl;
+        system("pause>nul&&cls");
+        fpai();
+        cout&lt;&lt;"请按任意键开始出牌"&lt;&lt;endl;
+        system("pause>nul&&cls");
+        while(!quit)
+        {
+            times++;
+            doplayer++;
+            if(doplayer>player)
+            {
+                doplayer=1;
+            }
+            lplayer=doplayer-1;
+            if(doplayer==1)
+            {
+                lplayer=player;
+            }
+            if(painum[doplayer]==0||life[doplayer]=="死了")
+            {
+                continue;
+            }
+            playerdo();
+            system("cls");
+            if(checkalive()==1)
+            {
+                return 0;
+            }
+        }
+    }
+    return 0;
+}
+    </pre>
+
+    <a href="https://mcrocky0420.github.io/" class="back">← 返回导航页</a>
+</body>
+</html>
