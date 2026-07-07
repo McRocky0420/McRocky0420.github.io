@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>接水果 · 小游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #1a2a1f, #2d4a33);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            touch-action: manipulation;
+        }
+        .game-wrapper {
+            background: #3d5a3f;
+            padding: 1.5rem 1.5rem 2rem;
+            border-radius: 3rem 3rem 2rem 2rem;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            aspect-ratio: 400 / 500;
+            background: #b5d6e8;
+            border-radius: 28px;
+            box-shadow: inset 0 -8px 0 #2d4a33, 0 12px 24px rgba(0,0,0,0.5);
+            cursor: pointer;
+            touch-action: none;
+        }
+        .ui-bar {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #f0f9ff;
+            text-shadow: 0 2px 3px #0f1e0f;
+            font-weight: 600;
+            padding: 0 6px;
+        }
+        .score-box {
+            background: #1d331f;
+            padding: 0.4rem 1.2rem;
+            border-radius: 40px;
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+            box-shadow: inset 0 -3px 0 #0d1a0d, 0 6px 10px rgba(0,0,0,0.3);
+        }
+        .restart-btn {
+            background: #f5b06b;
+            border: none;
+            color: #1f331f;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 0.5rem 1.5rem;
+            border-radius: 40px;
+            box-shadow: 0 7px 0 #a87d44, 0 6px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: 0.07s ease;
+            touch-action: manipulation;
+        }
+        .restart-btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 2px 0 #a87d44;
+        }
+        .restart-btn:hover {
+            background: #fccb8a;
+        }
+        .hint {
+            color: #c6ddc6;
+            margin-top: 0.6rem;
+            font-size: 0.9rem;
+            background: #1b331d;
+            padding: 0.2rem 1.6rem;
+            border-radius: 50px;
+            box-shadow: inset 0 1px 3px #3d6b3f;
+        }
+        @media (max-width: 480px) {
+            .game-wrapper { padding: 1rem; }
+            .score-box { font-size: 1.2rem; padding: 0.2rem 1rem; }
+            .restart-btn { font-size: 0.95rem; padding: 0.3rem 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-wrapper">
+    <canvas id="gameCanvas" width="400" height="500"></canvas>
+    <div class="ui-bar">
+        <span class="score-box" id="scoreDisplay">0</span>
+        <button class="restart-btn" id="restartButton">↻ 重来</button>
+    </div>
+    <div class="hint">← 鼠标/手指 左右滑动 →</div>
+</div>
+<script>
+    (function(){
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreSpan = document.getElementById('scoreDisplay');
+
+        const W = 400, H = 500;
+
+        // ---------- 游戏状态 ----------
+        let gameOver = false;
+        let score = 0;
+        let frameCounter = 0;
+
+        // ---------- 玩家（篮子） ----------
+        const player = {
+            x: 200,
+            y: 440,
+            width: 64,
+            height: 40,
+            speed: 6,
+        };
+
+        // ---------- 掉落物 ----------
+        let items = [];
+        const ITEM_TYPES = ['fruit', 'bomb'];
+
+        // 水果配置
+        const FRUIT_COLORS = ['#ff6b6b', '#ffb347', '#51cf66', '#fcc419', '#cc5de8', '#ff922b'];
+        const FRUIT_NAMES = ['🍎', '🍊', '🍋', '🍇', '🍉', '🍑'];
+
+        // 生成参数
+        const BASE_SPAWN_INTERVAL = 28;
+        let spawnInterval = BASE_SPAWN_INTERVAL;
+        const MIN_SPAWN_INTERVAL = 12;
+        let fallSpeed = 3.2;
+        const MAX_FALL_SPEED = 8.0;
+
+        // ---------- 重置 ----------
+        function resetGame() {
+            gameOver = false;
+            score = 0;
+            items = [];
+            frameCounter = 0;
+            fallSpeed = 3.2;
+            spawnInterval = BASE_SPAWN_INTERVAL;
+            player.x = 200;
+            updateScoreDisplay();
+        }
+
+        // ---------- 生成物品 ----------
+        function spawnItem() {
+            const isBomb = Math.random() < 0.20; // 20% 概率是炸弹
+            const type = isBomb ? 'bomb' : 'fruit';
+            const x = 20 + Math.random() * (W - 40);
+            const size = isBomb ? 26 : 28;
+
+            let color = '#ff4444';
+            let label = '💣';
+            if (!isBomb) {
+                const idx = Math.floor(Math.random() * FRUIT_COLORS.length);
+                color = FRUIT_COLORS[idx];
+                label = FRUIT_NAMES[idx % FRUIT_NAMES.length];
+            }
+
+            items.push({
+                x: x,
+                y: -size,
+                size: size,
+                type: type,
+                color: color,
+                label: label,
+                speed: fallSpeed * (0.85 + Math.random() * 0.3),
+            });
+        }
+
+        // ---------- 更新分数显示 ----------
+        function updateScoreDisplay() {
+            scoreSpan.textContent = score;
+        }
+
+        // ---------- 碰撞检测（矩形） ----------
+        function rectCollide(r1, r2) {
+            return r1.x < r2.x + r2.w &&
+                   r1.x + r1.w > r2.x &&
+                   r1.y < r2.y + r2.h &&
+                   r1.y + r1.h > r2.y;
+        }
+
+        // ---------- 更新逻辑 ----------
+        function update() {
+            if (gameOver) return;
+
+            // --- 玩家移动（键盘） ---
+            // 由键盘事件控制移动，这里只做边界限制
+            if (player.x < 4) player.x = 4;
+            if (player.x + player.width > W - 4) player.x = W - 4 - player.width;
+
+            // --- 生成物品 ---
+            frameCounter++;
+            if (frameCounter >= spawnInterval) {
+                frameCounter = 0;
+                spawnItem();
+                // 偶尔一次生成多个
+                if (Math.random() < 0.25 && items.length < 8) {
+                    spawnItem();
+                }
+            }
+
+            // --- 更新物品位置 & 碰撞检测 ---
+            const playerRect = {
+                x: player.x + 6,
+                y: player.y + 6,
+                w: player.width - 12,
+                h: player.height - 10,
+            };
+
+            for (let i = items.length - 1; i >= 0; i--) {
+                const item = items[i];
+                item.y += item.speed;
+
+                // 检查是否超出底部（丢失）
+                if (item.y - item.size > H) {
+                    items.splice(i, 1);
+                    // 如果是水果掉出，不扣分，但如果是炸弹掉出，也不扣分（但炸弹落地消失）
+                    continue;
+                }
+
+                // 碰撞检测（仅当未 gameOver）
+                if (!gameOver) {
+                    const itemRect = {
+                        x: item.x - item.size/2 + 4,
+                        y: item.y - item.size/2 + 4,
+                        w: item.size - 8,
+                        h: item.size - 8,
+                    };
+                    if (rectCollide(playerRect, itemRect)) {
+                        if (item.type === 'bomb') {
+                            gameOver = true;
+                            break;
+                        } else {
+                            // 接住水果，加分，移除
+                            score += 1;
+                            updateScoreDisplay();
+                            items.splice(i, 1);
+                            // 动态难度
+                            fallSpeed = Math.min(MAX_FALL_SPEED, fallSpeed + 0.04);
+                            spawnInterval = Math.max(MIN_SPAWN_INTERVAL, spawnInterval - 0.15);
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            // 安全限制
+            if (items.length > 18) {
+                items.splice(0, items.length - 15);
+            }
+        }
+
+        // ---------- 绘制 ----------
+        function draw() {
+            ctx.clearRect(0, 0, W, H);
+
+            // 背景渐变
+            const sky = ctx.createLinearGradient(0, 0, 0, H);
+            sky.addColorStop(0, '#b3d9f0');
+            sky.addColorStop(0.6, '#d4ecf7');
+            ctx.fillStyle = sky;
+            ctx.fillRect(0, 0, W, H);
+
+            // 云朵装饰
+            ctx.fillStyle = 'rgba(255,255,255,0.35)';
+            for (let i=0; i<4; i++) {
+                const x = (i*130 + frameCounter*0.15) % 500 - 60;
+                ctx.beginPath();
+                ctx.arc(x, 35 + i*22, 28, 0, Math.PI*2);
+                ctx.arc(x+32, 25 + i*20, 22, 0, Math.PI*2);
+                ctx.arc(x+64, 40 + i*24, 26, 0, Math.PI*2);
+                ctx.fill();
+            }
+
+            // 草地 / 地面
+            ctx.fillStyle = '#7dad7a';
+            ctx.fillRect(0, 468, W, 32);
+            ctx.fillStyle = '#5f8a5c';
+            ctx.fillRect(0, 468, W, 6);
+            for (let i=0; i<15; i++) {
+                const gx = (i*30 + frameCounter*0.4) % 450;
+                ctx.fillStyle = '#8fc78a';
+                ctx.beginPath();
+                ctx.moveTo(gx, 466);
+                ctx.lineTo(gx+10, 456);
+                ctx.lineTo(gx+20, 466);
+                ctx.fill();
+            }
+
+            // --- 绘制掉落物 ---
+            for (const item of items) {
+                const x = item.x, y = item.y, size = item.size;
+                ctx.shadowColor = 'rgba(0,0,0,0.25)';
+                ctx.shadowBlur = 14;
+                ctx.shadowOffsetY = 4;
+
+                if (item.type === 'bomb') {
+                    // 炸弹
+                    const grad = ctx.createRadialGradient(x-4, y-6, 4, x, y, size);
+                    grad.addColorStop(0, '#666');
+                    grad.addColorStop(0.7, '#222');
+                    grad.addColorStop(1, '#111');
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size/2, 0, Math.PI*2);
+                    ctx.fill();
+                    // 引线
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = '#553322';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x+8, y-10);
+                    ctx.quadraticCurveTo(x+18, y-22, x+12, y-28);
+                    ctx.stroke();
+                    // 火花
+                    ctx.fillStyle = '#ff8800';
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = '#ff4400';
+                    ctx.beginPath();
+                    ctx.arc(x+12, y-28, 5, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.fillStyle = '#ffcc00';
+                    ctx.shadowBlur = 16;
+                    ctx.beginPath();
+                    ctx.arc(x+12, y-28, 3, 0, Math.PI*2);
+                    ctx.fill();
+                } else {
+                    // 水果 (带光泽)
+                    const grad = ctx.createRadialGradient(x-6, y-8, 4, x, y, size/2);
+                    grad.addColorStop(0, '#fff9e6');
+                    grad.addColorStop(0.2, item.color);
+                    grad.addColorStop(0.9, item.color);
+                    grad.addColorStop(1, '#333');
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size/2, 0, Math.PI*2);
+                    ctx.fill();
+
+                    // Emoji 标签
+                    ctx.shadowBlur = 4;
+                    ctx.shadowOffsetY = 2;
+                    ctx.font = `${size-4}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.fillText(item.label, x, y+1);
+                }
+            }
+
+            // --- 绘制玩家（篮子） ---
+            ctx.shadowColor = 'rgba(0,0,0,0.35)';
+            ctx.shadowBlur = 18;
+            ctx.shadowOffsetY = 6;
+            const px = player.x, py = player.y, pw = player.width, ph = player.height;
+
+            // 篮子主体
+            const basketGrad = ctx.createLinearGradient(px, py, px, py+ph);
+            basketGrad.addColorStop(0, '#d4a373');
+            basketGrad.addColorStop(0.5, '#b8834a');
+            basketGrad.addColorStop(1, '#8b6b40');
+            ctx.fillStyle = basketGrad;
+            ctx.beginPath();
+            ctx.roundRect(px, py, pw, ph, 10);
+            ctx.fill();
+
+            // 篮子边框 / 编织纹
+            ctx.shadowBlur = 4;
+            ctx.strokeStyle = '#6d4f2e';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(px+6, py+4, pw-12, ph-8);
+
+            // 提手
+            ctx.strokeStyle = '#7a5d3a';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.arc(px + pw/2, py-2, 20, 0.2, Math.PI-0.2);
+            ctx.stroke();
+
+            // 高光
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = 'rgba(255,240,200,0.2)';
+            ctx.beginPath();
+            ctx.roundRect(px+8, py+4, pw-16, 8, 4);
+            ctx.fill();
+
+            // --- 游戏结束蒙层 ---
+            if (gameOver) {
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(20, 20, 30, 0.6)';
+                ctx.fillRect(0, 0, W, H);
+                ctx.font = 'bold 36px "Segoe UI", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#fad8b0';
+                ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                ctx.shadowBlur = 20;
+                ctx.fillText('💥 爆炸啦', W/2, H/2 - 24);
+                ctx.font = '20px sans-serif';
+                ctx.fillStyle = '#d4e6ff';
+                ctx.fillText('点击 "重来"', W/2, H/2 + 44);
+            }
+
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
+        }
+
+        // 辅助 roundRect
+        CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+            if (w < 2 * r) r = w / 2;
+            if (h < 2 * r) r = h / 2;
+            this.moveTo(x + r, y);
+            this.lineTo(x + w - r, y);
+            this.quadraticCurveTo(x + w, y, x + w, y + r);
+            this.lineTo(x + w, y + h - r);
+            this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            this.lineTo(x + r, y + h);
+            this.quadraticCurveTo(x, y + h, x, y + h - r);
+            this.lineTo(x, y + r);
+            this.quadraticCurveTo(x, y, x + r, y);
+            return this;
+        };
+
+        // ---------- 循环 ----------
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ---------- 事件：移动 ----------
+        let isDragging = false;
+        let lastPointerX = 0;
+
+        function handlePointerStart(e) {
+            e.preventDefault();
+            if (gameOver) return;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const canvasX = (clientX - rect.left) * scaleX;
+            isDragging = true;
+            lastPointerX = canvasX;
+            // 直接跳转到指针位置 (中心对齐)
+            player.x = canvasX - player.width/2;
+            if (player.x < 4) player.x = 4;
+            if (player.x + player.width > W - 4) player.x = W - 4 - player.width;
+        }
+
+        function handlePointerMove(e) {
+            e.preventDefault();
+            if (!isDragging || gameOver) return;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const canvasX = (clientX - rect.left) * scaleX;
+            // 平滑跟随
+            player.x += (canvasX - player.width/2 - player.x) * 0.5;
+            if (player.x < 4) player.x = 4;
+            if (player.x + player.width > W - 4) player.x = W - 4 - player.width;
+        }
+
+        function handlePointerEnd(e) {
+            e.preventDefault();
+            isDragging = false;
+        }
+
+        // ---------- 键盘移动 ----------
+        const keys = { left: false, right: false };
+        function onKeydown(e) {
+            if (e.key === 'ArrowLeft' || e.key === 'Left') {
+                keys.left = true;
+                e.preventDefault();
+            } else if (e.key === 'ArrowRight' || e.key === 'Right') {
+                keys.right = true;
+                e.preventDefault();
+            }
+        }
+        function onKeyup(e) {
+            if (e.key === 'ArrowLeft' || e.key === 'Left') {
+                keys.left = false;
+                e.preventDefault();
+            } else if (e.key === 'ArrowRight' || e.key === 'Right') {
+                keys.right = false;
+                e.preventDefault();
+            }
+        }
+
+        // 键盘更新循环 (在update中调用)
+        function updateKeyboardMovement() {
+            if (gameOver) return;
+            if (keys.left) player.x -= player.speed;
+            if (keys.right) player.x += player.speed;
+            if (player.x < 4) player.x = 4;
+            if (player.x + player.width > W - 4) player.x = W - 4 - player.width;
+        }
+
+        // 改写update，加入键盘移动
+        const originalUpdate = update;
+        update = function() {
+            updateKeyboardMovement();
+            originalUpdate();
+        };
+
+        // ---------- 重开 ----------
+        function onRestart() {
+            resetGame();
+        }
+
+        // ---------- 挂载事件 ----------
+        canvas.addEventListener('mousedown', handlePointerStart);
+        window.addEventListener('mousemove', handlePointerMove);
+        window.addEventListener('mouseup', handlePointerEnd);
+        canvas.addEventListener('touchstart', handlePointerStart, { passive: false });
+        window.addEventListener('touchmove', handlePointerMove, { passive: false });
+        window.addEventListener('touchend', handlePointerEnd, { passive: false });
+
+        window.addEventListener('keydown', onKeydown);
+        window.addEventListener('keyup', onKeyup);
+
+        document.getElementById('restartButton').addEventListener('click', onRestart);
+
+        // 初始化 & 启动
+        resetGame();
+        gameLoop();
+
+        // 清理
+        window.addEventListener('beforeunload', function() {
+            canvas.removeEventListener('mousedown', handlePointerStart);
+            window.removeEventListener('mousemove', handlePointerMove);
+            window.removeEventListener('mouseup', handlePointerEnd);
+            canvas.removeEventListener('touchstart', handlePointerStart);
+            window.removeEventListener('touchmove', handlePointerMove);
+            window.removeEventListener('touchend', handlePointerEnd);
+            window.removeEventListener('keydown', onKeydown);
+            window.removeEventListener('keyup', onKeyup);
+        });
+    })();
+</script>
+</body>
+</html>
