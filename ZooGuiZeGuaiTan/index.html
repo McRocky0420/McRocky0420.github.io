@@ -5,77 +5,277 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
   <title>动物园规则怪谈 · 深渊回廊</title>
   <style>
+    /* ========== 深色模式变量 (默认) ========== */
     :root {
-      --bg: #0a0908; --panel: #151210; --text: #c8bfb2; --text-bright: #e6ddd2;
-      --accent: #9b3a3a; --accent-glow: #c04a4a; --gold: #b89a5a; --blue-glow: #2a4a6a;
-      --border: #2a221c; --btn-bg: #1b1612; --btn-hover: #241d17; --btn-border: #3a2e24;
-      --danger: #6a2020; --safe: #2a4a2a; --warning: #5a4520; --clue-bg: #100e0b;
-      --mythic: #c08a5c; --void: #1a1030;
-      --s-rank: #ffd966; --a-rank: #ff6b6b; --b-rank: #ffaa33; --c-rank: #9a8a7a; --d-rank: #5a5a5a; --e-rank: #3a2a3a;
-      font-size: 16px;
+      --bg: #0a0908;
+      --bg-secondary: #0d0a08;
+      --panel: #151210;
+      --panel-secondary: #1a1612;
+      --text: #c8bfb2;
+      --text-bright: #e6ddd2;
+      --text-dim: #8a7a6a;
+      --text-muted: #5a4a3a;
+      --accent: #9b3a3a;
+      --accent-glow: #c04a4a;
+      --gold: #b89a5a;
+      --gold-bright: #d4a870;
+      --blue-glow: #2a4a6a;
+      --border: #2a221c;
+      --border-light: #3a2e24;
+      --btn-bg: #1b1612;
+      --btn-hover: #241d17;
+      --btn-border: #3a2e24;
+      --btn-text: #b8a590;
+      --btn-text-hover: #d8c8b8;
+      --danger: #6a2020;
+      --danger-hover: #7a3030;
+      --safe: #2a4a2a;
+      --safe-hover: #3a5a3a;
+      --mythic: #3a2a4a;
+      --mythic-hover: #4a3a5a;
+      --warning: #5a4520;
+      --clue-bg: #100e0b;
+      --clue-border: #2a1f16;
+      --clue-dot-bg: #1f1812;
+      --clue-dot-border: #33261c;
+      --clue-dot-active: #b44a30;
+      --clue-dot-special: #c8a040;
+      --clue-dot-mythic: #c080c0;
+      --header-bg-start: #1a100c;
+      --header-bg-end: #0f0a06;
+      --time-bg: #0a0705;
+      --time-bar-bg: #1a1510;
+      --time-fill: #b89040;
+      --time-fill-urgent: #c04030;
+      --footer-bg: #0a0806;
+      --footer-border: #201a14;
+      --highlight: #d4a870;
+      --warning-text: #c05040;
+      --mythic-text: #b890c0;
+      --italic: #9a8a7a;
+      --shadow-lg: 0 0 80px rgba(60,20,20,0.3), 0 0 150px rgba(0,0,0,0.6);
+      --shadow-inset: inset 0 0 0 1px rgba(255,255,255,0.02);
+      --shadow-btn: 0 0 18px rgba(80,40,20,0.3);
+      --shadow-danger: 0 0 20px rgba(120,20,20,0.5);
+      --shadow-safe: 0 0 18px rgba(30,80,30,0.3);
+      --shadow-mythic: 0 0 18px rgba(80,40,120,0.4);
+      --particle-color: rgba(180,130,80,0.3);
+      --gradient-radial-1: rgba(40,20,30,0.4);
+      --gradient-radial-2: rgba(20,30,50,0.5);
+      --ending-s: #ffd966;
+      --ending-a: #ff6b6b;
+      --ending-b: #ffaa33;
+      --ending-c: #9a8a7a;
+      --ending-d: #6a6a6a;
+      --ending-e: #4a3a5a;
+      --restart-btn-border: #4a3530;
+      --restart-btn-hover-border: #8a6a5a;
+      --theme-btn-bg: rgba(255,255,255,0.05);
+      --theme-btn-hover: rgba(255,255,255,0.12);
     }
+
+    /* ========== 浅色模式变量 ========== */
+    [data-theme="light"] {
+      --bg: #f0ebe3;
+      --bg-secondary: #e8e0d8;
+      --panel: #faf6f0;
+      --panel-secondary: #f5efe8;
+      --text: #3a3028;
+      --text-bright: #1a1010;
+      --text-dim: #6a5a4a;
+      --text-muted: #8a7a6a;
+      --accent: #8b3a3a;
+      --accent-glow: #a04040;
+      --gold: #8a6a3a;
+      --gold-bright: #6a4a2a;
+      --blue-glow: #3a5a7a;
+      --border: #d5c8b8;
+      --border-light: #c0b0a0;
+      --btn-bg: #f0e8dd;
+      --btn-hover: #e8ddd0;
+      --btn-border: #c0b0a0;
+      --btn-text: #4a3a2a;
+      --btn-text-hover: #2a1a10;
+      --danger: #f0d0d0;
+      --danger-hover: #e8c0c0;
+      --safe: #d0e8d0;
+      --safe-hover: #c0dcc0;
+      --mythic: #e0d0e8;
+      --mythic-hover: #d4c0dc;
+      --warning: #f0e0c0;
+      --clue-bg: #f5efe8;
+      --clue-border: #d5c8b8;
+      --clue-dot-bg: #e0d5c8;
+      --clue-dot-border: #c0b0a0;
+      --clue-dot-active: #c05040;
+      --clue-dot-special: #b89030;
+      --clue-dot-mythic: #a060b0;
+      --header-bg-start: #e8ddd0;
+      --header-bg-end: #ddd0c0;
+      --time-bg: #f0e8dd;
+      --time-bar-bg: #d5c8b8;
+      --time-fill: #8a6a3a;
+      --time-fill-urgent: #c04030;
+      --footer-bg: #f0e8dd;
+      --footer-border: #d5c8b8;
+      --highlight: #8a5a3a;
+      --warning-text: #a03030;
+      --mythic-text: #7a4a8a;
+      --italic: #6a5a4a;
+      --shadow-lg: 0 0 40px rgba(0,0,0,0.1), 0 0 80px rgba(0,0,0,0.05);
+      --shadow-inset: inset 0 0 0 1px rgba(0,0,0,0.03);
+      --shadow-btn: 0 0 10px rgba(0,0,0,0.08);
+      --shadow-danger: 0 0 14px rgba(180,30,30,0.2);
+      --shadow-safe: 0 0 14px rgba(30,120,30,0.15);
+      --shadow-mythic: 0 0 14px rgba(80,40,120,0.2);
+      --particle-color: rgba(140,100,60,0.15);
+      --gradient-radial-1: rgba(200,180,160,0.3);
+      --gradient-radial-2: rgba(180,190,200,0.3);
+      --ending-s: #b89030;
+      --ending-a: #c04040;
+      --ending-b: #c07030;
+      --ending-c: #7a6a5a;
+      --ending-d: #5a5a5a;
+      --ending-e: #4a3050;
+      --restart-btn-border: #c0b0a0;
+      --restart-btn-hover-border: #6a5a4a;
+      --theme-btn-bg: rgba(0,0,0,0.05);
+      --theme-btn-hover: rgba(0,0,0,0.1);
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: var(--bg);
-      background-image: radial-gradient(circle at 20% 30%, rgba(40,20,30,0.4) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 70%, rgba(20,30,50,0.5) 0%, transparent 60%);
+      background-image: radial-gradient(circle at 20% 30%, var(--gradient-radial-1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 70%, var(--gradient-radial-2) 0%, transparent 60%);
       font-family: 'Noto Serif SC', 'Georgia', 'SimSun', 'KaiTi', serif;
       min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 16px; color: var(--text);
+      transition: background 0.5s ease, color 0.5s ease;
     }
     .particles { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index:0; }
-    .particle { position: absolute; background: rgba(180,130,80,0.3); border-radius: 50%; animation: float linear infinite; opacity: 0; }
+    .particle { position: absolute; background: var(--particle-color); border-radius: 50%; animation: float linear infinite; opacity: 0; transition: background 0.5s ease; }
     @keyframes float { 0%{transform: translateY(105vh) scale(0); opacity:0;} 15%{opacity:0.7;} 85%{opacity:0.2;} 100%{transform: translateY(-15vh) scale(1.8); opacity:0;} }
     .main-container {
       position: relative; z-index:2; width:100%; max-width: 750px; background: var(--panel);
       border: 1px solid var(--border); border-radius: 12px;
-      box-shadow: 0 0 80px rgba(60,20,20,0.3), 0 0 150px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.02);
-      overflow: hidden; transition: all 0.3s;
+      box-shadow: var(--shadow-lg), var(--shadow-inset);
+      overflow: hidden; transition: all 0.5s ease;
     }
-    .header { background: linear-gradient(180deg, #1a100c 0%, #0f0a06 100%); border-bottom: 1px solid var(--border); padding: 18px 24px; text-align: center; }
-    .header h1 { font-size: 1.7em; letter-spacing: 0.2em; color: var(--text-bright); font-weight: 400; text-shadow: 0 0 30px rgba(180,100,40,0.5); }
-    .header .subtitle { font-size: 0.8em; color: #7a6a5a; letter-spacing: 0.25em; margin-top: 5px; }
-    .time-display { display: flex; justify-content: space-between; align-items: center; padding: 8px 20px; background: #0a0705; border-bottom: 1px solid #201a14; font-size: 0.8em; color: #8a7a60; }
-    .time-bar { width: 120px; height: 6px; background: #1a1510; border-radius: 3px; overflow: hidden; }
-    .time-fill { height: 100%; width: 100%; background: #b89040; transition: width 0.5s; }
-    .time-fill.urgent { background: #c04030; animation: pulse-bar 1s infinite; }
+    .header {
+      background: linear-gradient(180deg, var(--header-bg-start) 0%, var(--header-bg-end) 100%);
+      border-bottom: 1px solid var(--border); padding: 18px 24px; text-align: center; position: relative;
+      transition: all 0.5s ease;
+    }
+    .header h1 { font-size: 1.7em; letter-spacing: 0.2em; color: var(--text-bright); font-weight: 400; text-shadow: 0 0 30px rgba(180,100,40,0.5); transition: color 0.5s ease; }
+    .header .subtitle { font-size: 0.8em; color: var(--text-dim); letter-spacing: 0.25em; margin-top: 5px; transition: color 0.5s ease; }
+    
+    /* 主题切换按钮 */
+    .theme-toggle {
+      position: absolute; top: 14px; right: 18px;
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--theme-btn-bg);
+      border: 1px solid var(--border);
+      cursor: pointer; font-size: 1.2em;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s ease; z-index: 10;
+      color: var(--text-dim);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .theme-toggle:hover {
+      background: var(--theme-btn-hover);
+      border-color: var(--border-light);
+      color: var(--text-bright);
+      transform: scale(1.08);
+    }
+    .theme-toggle:active { transform: scale(0.94); }
+    
+    .time-display {
+      display: flex; justify-content: space-between; align-items: center; padding: 8px 20px;
+      background: var(--time-bg); border-bottom: 1px solid var(--border);
+      font-size: 0.8em; color: var(--text-dim); transition: all 0.5s ease;
+    }
+    .time-bar { width: 120px; height: 6px; background: var(--time-bar-bg); border-radius: 3px; overflow: hidden; transition: background 0.5s ease; }
+    .time-fill { height: 100%; width: 100%; background: var(--time-fill); transition: width 0.5s, background 0.5s ease; }
+    .time-fill.urgent { background: var(--time-fill-urgent); animation: pulse-bar 1s infinite; }
     @keyframes pulse-bar { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
-    .clue-tracker { background: var(--clue-bg); border-bottom: 1px solid #2a1f16; padding: 10px 20px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .clue-dot { width: 12px; height: 12px; border-radius: 50%; background: #1f1812; border: 1px solid #33261c; transition: all 0.4s; flex-shrink: 0; }
-    .clue-dot.active { background: #b44a30; border-color: #c85a3a; box-shadow: 0 0 10px rgba(180,60,30,0.6); }
-    .clue-dot.special { background: #c8a040; border-color: #e0b850; box-shadow: 0 0 16px rgba(200,150,40,0.8); }
-    .clue-dot.mythic { background: #c080c0; border-color: #d0a0e0; box-shadow: 0 0 18px rgba(160,80,200,0.9); animation: myth-pulse 1.8s infinite; }
+    
+    .clue-tracker {
+      background: var(--clue-bg); border-bottom: 1px solid var(--clue-border);
+      padding: 10px 20px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      transition: all 0.5s ease;
+    }
+    .clue-dot {
+      width: 12px; height: 12px; border-radius: 50%; background: var(--clue-dot-bg);
+      border: 1px solid var(--clue-dot-border); transition: all 0.4s; flex-shrink: 0;
+    }
+    .clue-dot.active { background: var(--clue-dot-active); border-color: var(--clue-dot-active); box-shadow: 0 0 10px rgba(180,60,30,0.6); }
+    .clue-dot.special { background: var(--clue-dot-special); border-color: var(--clue-dot-special); box-shadow: 0 0 16px rgba(200,150,40,0.8); }
+    .clue-dot.mythic { background: var(--clue-dot-mythic); border-color: var(--clue-dot-mythic); box-shadow: 0 0 18px rgba(160,80,200,0.9); animation: myth-pulse 1.8s infinite; }
     @keyframes myth-pulse { 0%,100%{box-shadow: 0 0 12px rgba(160,80,200,0.6);} 50%{box-shadow: 0 0 24px rgba(180,100,220,1);} }
-    .clue-label { font-size: 0.7em; color: #5a4838; letter-spacing: 0.1em; white-space: nowrap; }
-    .content-area { padding: 24px 24px 18px; min-height: 300px; position: relative; }
-    .scene-text { font-size: 1em; line-height: 1.85; letter-spacing: 0.04em; color: #bcb0a0; margin-bottom: 22px; white-space: pre-wrap; }
-    .scene-text .highlight { color: #d4a870; font-style: italic; }
-    .scene-text .warning-text { color: #c05040; font-weight: 600; }
-    .scene-text .mythic-text { color: #b890c0; font-weight: 600; text-shadow: 0 0 8px rgba(150,80,180,0.5); }
-    .scene-text .italic { font-style: italic; color: #9a8a7a; }
-    .typing-cursor { display: inline-block; animation: blink 1s step-end infinite; color: #b44a3a; }
+    .clue-label { font-size: 0.7em; color: var(--text-muted); letter-spacing: 0.1em; white-space: nowrap; transition: color 0.5s ease; }
+    
+    .content-area { padding: 24px 24px 18px; min-height: 300px; position: relative; transition: background 0.5s ease; }
+    .scene-text { font-size: 1em; line-height: 1.85; letter-spacing: 0.04em; color: var(--text); margin-bottom: 22px; white-space: pre-wrap; transition: color 0.5s ease; }
+    .scene-text .highlight { color: var(--highlight); font-style: italic; }
+    .scene-text .warning-text { color: var(--warning-text); font-weight: 600; }
+    .scene-text .mythic-text { color: var(--mythic-text); font-weight: 600; text-shadow: 0 0 8px rgba(150,80,180,0.5); }
+    .scene-text .italic { font-style: italic; color: var(--italic); }
+    .typing-cursor { display: inline-block; animation: blink 1s step-end infinite; color: var(--accent); }
     @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+    
     .choices-area { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
-    .choice-btn { width: 100%; padding: 14px 18px; background: var(--btn-bg); border: 1px solid var(--btn-border); border-radius: 6px; color: #b8a590; font-family: inherit; font-size: 0.9em; letter-spacing: 0.05em; cursor: pointer; text-align: left; transition: all 0.25s; }
-    .choice-btn:hover { background: var(--btn-hover); border-color: #6a5040; color: #d8c8b8; box-shadow: 0 0 18px rgba(80,40,20,0.3); transform: translateX(4px); }
-    .choice-btn.danger-choice { border-color: #4a2020; background: #180e0e; }
-    .choice-btn.danger-choice:hover { border-color: #7a3030; box-shadow: 0 0 20px rgba(120,20,20,0.5); }
-    .choice-btn.safe-choice { border-color: #2a3a2a; background: #0e180e; }
-    .choice-btn.mythic-choice { border-color: #3a2a4a; background: #150e1a; }
+    .choice-btn {
+      width: 100%; padding: 14px 18px; background: var(--btn-bg); border: 1px solid var(--btn-border);
+      border-radius: 6px; color: var(--btn-text); font-family: inherit; font-size: 0.9em;
+      letter-spacing: 0.05em; cursor: pointer; text-align: left; transition: all 0.25s;
+    }
+    .choice-btn:hover { background: var(--btn-hover); border-color: var(--border-light); color: var(--btn-text-hover); box-shadow: var(--shadow-btn); transform: translateX(4px); }
+    .choice-btn.danger-choice { border-color: var(--danger); background: var(--danger); }
+    .choice-btn.danger-choice:hover { border-color: var(--danger-hover); background: var(--danger-hover); box-shadow: var(--shadow-danger); }
+    .choice-btn.safe-choice { border-color: var(--safe); background: var(--safe); }
+    .choice-btn.safe-choice:hover { border-color: var(--safe-hover); background: var(--safe-hover); box-shadow: var(--shadow-safe); }
+    .choice-btn.mythic-choice { border-color: var(--mythic); background: var(--mythic); }
+    .choice-btn.mythic-choice:hover { border-color: var(--mythic-hover); background: var(--mythic-hover); box-shadow: var(--shadow-mythic); }
+    
     .ending-display { text-align: center; padding: 20px 0; }
     .ending-rank { font-size: 4.5em; font-weight: bold; letter-spacing: 0.1em; margin-bottom: 8px; text-shadow: 0 0 40px currentColor; }
-    .ending-rank.s-rank { color: #ffd966; } .ending-rank.a-rank { color: #ff6b6b; } .ending-rank.b-rank { color: #ffaa33; } .ending-rank.c-rank { color: #9a8a7a; } .ending-rank.d-rank { color: #6a6a6a; } .ending-rank.e-rank { color: #4a3a5a; }
-    .ending-title { font-size: 1.6em; letter-spacing: 0.1em; margin-bottom: 14px; color: #d4c4b0; }
-    .ending-desc { font-size: 0.9em; color: #9a8a7a; line-height: 1.8; margin-bottom: 18px; }
-    .restart-btn { display: inline-block; padding: 12px 30px; background: transparent; border: 1px solid #4a3530; color: #a09080; font-family: inherit; font-size: 0.9em; letter-spacing: 0.1em; cursor: pointer; transition: all 0.3s; margin-top: 8px; }
-    .restart-btn:hover { border-color: #8a6a5a; color: #d4c4b0; box-shadow: 0 0 20px rgba(100,50,30,0.4); background: #1a1410; }
-    .footer-bar { border-top: 1px solid #201a14; padding: 10px 20px; font-size: 0.7em; color: #4a3a2a; display: flex; justify-content: space-between; background: #0a0806; }
-    @media (max-width: 500px) { .header h1 { font-size: 1.3em; } .content-area { padding: 14px; } .choice-btn { font-size: 0.8em; } }
+    .ending-rank.s-rank { color: var(--ending-s); } .ending-rank.a-rank { color: var(--ending-a); }
+    .ending-rank.b-rank { color: var(--ending-b); } .ending-rank.c-rank { color: var(--ending-c); }
+    .ending-rank.d-rank { color: var(--ending-d); } .ending-rank.e-rank { color: var(--ending-e); }
+    .ending-title { font-size: 1.6em; letter-spacing: 0.1em; margin-bottom: 14px; color: var(--text-bright); transition: color 0.5s ease; }
+    .ending-desc { font-size: 0.9em; color: var(--text-dim); line-height: 1.8; margin-bottom: 18px; transition: color 0.5s ease; }
+    .ending-clues-summary { font-size: 0.8em; color: var(--text-muted); margin-top: 10px; }
+    
+    .restart-btn {
+      display: inline-block; padding: 12px 30px; background: transparent; border: 1px solid var(--restart-btn-border);
+      color: var(--btn-text); font-family: inherit; font-size: 0.9em; letter-spacing: 0.1em;
+      cursor: pointer; transition: all 0.3s; margin-top: 8px; border-radius: 6px;
+    }
+    .restart-btn:hover { border-color: var(--restart-btn-hover-border); color: var(--btn-text-hover); box-shadow: var(--shadow-btn); background: var(--btn-hover); }
+    
+    .footer-bar {
+      border-top: 1px solid var(--footer-border); padding: 10px 20px; font-size: 0.7em;
+      color: var(--text-muted); display: flex; justify-content: space-between;
+      background: var(--footer-bg); transition: all 0.5s ease;
+    }
+    
+    @media (max-width: 500px) {
+      .header h1 { font-size: 1.3em; }
+      .content-area { padding: 14px; }
+      .choice-btn { font-size: 0.8em; padding: 12px 14px; }
+      .theme-toggle { top: 10px; right: 10px; width: 32px; height: 32px; font-size: 1em; }
+    }
   </style>
 </head>
 <body>
 <div class="particles" id="particles"></div>
 <div class="main-container" id="mainContainer">
-  <div class="header"><h1>动 物 园 规 则 怪 谈</h1><div class="subtitle">—— 深 渊 回 廊 ——</div></div>
+  <div class="header">
+    <h1>动 物 园 规 则 怪 谈</h1>
+    <div class="subtitle">—— 深 渊 回 廊 ——</div>
+    <button class="theme-toggle" id="themeToggle" title="切换深色/浅色模式" aria-label="切换主题">🌙</button>
+  </div>
   <div class="time-display"><span id="timeLabel">⏳ 入园时间</span><div class="time-bar"><div class="time-fill" id="timeFill"></div></div><span id="timeValue">15:00</span></div>
   <div class="clue-tracker" id="clueTracker">
     <span class="clue-label">📜 认知：</span>
@@ -87,9 +287,51 @@
 </div>
 <script>
 (function() {
-  // 粒子背景
-  for(let i=0;i<40;i++){let p=document.createElement('div');p.className='particle';let s=Math.random()*3+1.5;p.style.width=s+'px';p.style.height=s+'px';p.style.left=Math.random()*100+'%';p.style.animationDuration=(Math.random()*18+10)+'s';p.style.animationDelay=(Math.random()*10)+'s';document.getElementById('particles').appendChild(p);}
+  // ========== 主题管理 ==========
+  const themeToggle = document.getElementById('themeToggle');
+  const htmlElement = document.documentElement;
+  
+  // 从 localStorage 读取保存的主题
+  const savedTheme = localStorage.getItem('zoo-theme') || 'dark';
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      htmlElement.setAttribute('data-theme', 'light');
+      themeToggle.textContent = '☀️';
+      themeToggle.title = '切换深色模式';
+    } else {
+      htmlElement.removeAttribute('data-theme');
+      themeToggle.textContent = '🌙';
+      themeToggle.title = '切换浅色模式';
+    }
+    localStorage.setItem('zoo-theme', theme);
+  }
+  applyTheme(savedTheme);
+  
+  themeToggle.addEventListener('click', () => {
+    const currentTheme = htmlElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    applyTheme(newTheme);
+    // 更新粒子颜色
+    updateParticleColors();
+  });
 
+  // 粒子背景
+  const particlesContainer = document.getElementById('particles');
+  const allParticles = [];
+  for(let i=0;i<40;i++){
+    let p=document.createElement('div'); p.className='particle';
+    let s=Math.random()*3+1.5; p.style.width=s+'px'; p.style.height=s+'px';
+    p.style.left=Math.random()*100+'%'; p.style.animationDuration=(Math.random()*18+10)+'s';
+    p.style.animationDelay=(Math.random()*10)+'s';
+    particlesContainer.appendChild(p); allParticles.push(p);
+  }
+  function updateParticleColors() {
+    const style = getComputedStyle(document.documentElement);
+    const color = style.getPropertyValue('--particle-color').trim();
+    allParticles.forEach(p => p.style.background = color);
+  }
+
+  // 状态
   const state = {
     clues: { c1:false,c2:false,c3:false,c4:false,c5:false,c6:false,c7:false,c8:false },
     flags: { readRules:false, followedRabbit:false, enteredOcean:false, ignoredWorker:false, staredRabbit:false, ran:false, sawIt:false, heardWhisper:false, tookMap:false, touchedMirror:false, freedLion:false, metGuardian:false, acceptedVoid:false, brokeCycle:false, fledFromFourth:false, nightfallTriggered:false, stayedWithLions:false },
@@ -132,7 +374,7 @@
   const scenes = {};
   function S(id, text, choices, footer, timeCost=0) { scenes[id] = { id, text, choices: choices||[], footer: footer||{left:'📍 园区',right:'🌫 未知'}, timeCost }; }
 
-  // ========== 场景定义 ==========
+  // ========== 场景定义 (完整保留) ==========
   S('start', `你站在动物园锈迹斑斑的大门前。天色阴沉，空气中弥漫着潮湿的泥土味与一丝若有若无的<span class="highlight">甜腻气息</span>。
 宣传栏上贴着一张泛黄的<span class="highlight">《入园须知》</span>，旁边还有一块崭新的铜牌，上面刻着"本园为市级文明单位"。
 一个身穿黑色制服的工作人员站在门内，面无表情地看着你。`, [
@@ -622,23 +864,15 @@
 
   function skipTyping() { if(isTyping&&typingTimer){ clearTimeout(typingTimer); isTyping=false; dom.sceneText.innerHTML=fullText; } }
 
-  // 结局分派逻辑
   function resolveStoneEnding() {
-    // 优先级1：从第四层逃回来的 → 归来者
     if (state.flags.fledFromFourth) return 'ending_b_return';
-    // 优先级2：狮子场景选择"带着全部记忆离开" → 清醒者
     if (state.clues.c5 && state.clues.c6 && state.clues.c7 && state.clues.c8) return 'ending_s_true';
-    // 优先级3：与狮子待在一起或在危急时冲向石板 → 狮子的恩惠
     if (state.flags.stayedWithLions || state.flags.sawIt) return 'ending_a_lion';
-    // 优先级4：默认 → 幸存者
     return 'ending_b_survivor';
   }
 
   function loadScene(id) {
-    // 特殊处理：石板结局分派
-    if (id === 'resolve_stone_ending') {
-      id = resolveStoneEnding();
-    }
+    if (id === 'resolve_stone_ending') { id = resolveStoneEnding(); }
     if(isTyping) skipTyping();
     let scene = scenes[id]; if(!scene) return;
     currentSceneId = id; state.visits++;
@@ -696,7 +930,7 @@
   });
 
   updateTime(900); updateClues(); loadScene('start');
-  console.log('🦁 动物园规则怪谈·深渊回廊 已修复 | 15+结局 | 归来者可正常触发');
+  console.log('🦁 动物园规则怪谈·深渊回廊 | 主题切换已就绪 | 15+结局');
 })();
 </script>
 </body>
